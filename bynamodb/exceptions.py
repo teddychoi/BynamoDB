@@ -1,0 +1,2 @@
+class NullAttributeException(Exception):
+    pass
