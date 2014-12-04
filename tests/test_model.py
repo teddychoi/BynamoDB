@@ -2,6 +2,7 @@ from _pytest.python import raises, fixture
 from boto.dynamodb2.types import STRING
 from boto.dynamodb2.layer1 import DynamoDBConnection
 from bynamodb.exceptions import NullAttributeException
+from bynamodb.filter_expression import GT
 
 from bynamodb.model import Attribute, Model
 
@@ -98,3 +99,34 @@ def test_save_item_nullable_attr_emptied(model_with_nullable_attr):
     }).save()
     item = model_with_nullable_attr.get_item(hash_key_value)
     assert item.hash_key == hash_key_value
+
+
+@fixture
+def fx_query_test_model():
+    class QueryTestModel(Model):
+        title = Attribute(STRING, hash_key=True)
+        content = Attribute(STRING)
+    QueryTestModel.create_table()
+    return QueryTestModel
+
+
+@fixture
+def fx_query_test_items(fx_query_test_model):
+    for ch in ['a', 'b', 'c', 'd', 'e']:
+        fx_query_test_model.put_item({'title': ch * 5, 'content': ch.upper() * 5})
+
+
+def test_scan(fx_query_test_model, fx_query_test_items):
+    result = fx_query_test_model.scan()
+    assert len(result.items) == 5
+    assert all(type(item) == fx_query_test_model for item in result)
+    assert all(item.title for item in result)
+
+
+def test_scan_with_filter_operator(fx_query_test_model, fx_query_test_items):
+    gt = GT('content', 'B')
+    result = fx_query_test_model.scan(filter_builder=gt)
+    assert len(result.items) == 4
+    for item in result:
+        print item.content
+    assert all([item.content > 'B' for item in result])

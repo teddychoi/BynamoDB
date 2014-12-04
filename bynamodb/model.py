@@ -4,6 +4,7 @@ from boto.dynamodb.types import get_dynamodb_type
 from boto.dynamodb2.types import Dynamizer
 
 from bynamodb.exceptions import NullAttributeException
+from bynamodb.results import Result
 
 
 class Attribute(object):
@@ -75,6 +76,14 @@ class Model(object):
             attribute_definitions=[field.definition() for field in table_schema],
             provisioned_throughput=raw_throughput
         )
+
+    @classmethod
+    def scan(cls, filter_builder=None, **kwargs):
+        if filter_builder:
+            kwargs['filter_expression'], kwargs['expression_attribute_values'] =\
+                filter_builder.build_exp()
+        result = cls._get_connection().scan(cls.get_table_name(), **kwargs)
+        return Result(cls, result)
 
     @classmethod
     def put_item(cls, data, **kwargs):
