@@ -16,8 +16,8 @@ class AttributeValues(object):
 
 
 class Operator(object):
-    def build_exp(self, attr_values=None):
-        attr_values = attr_values or AttributeValues()
+    def build_exp(self):
+        attr_values = AttributeValues()
         return self._build_exp(attr_values), attr_values.data
 
     def _build_exp(self, attr_values):
