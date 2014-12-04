@@ -104,15 +104,15 @@ class Model(object):
             kwargs['key'] = cls._encode_key(hash_key, range_key)
         raw_data = cls._get_connection().get_item(cls.get_table_name(),
                                                   **kwargs)
-        return cls(cls._deserialize(raw_data))
+        return cls.deserialize(raw_data['Item'])
 
     @classmethod
-    def _deserialize(cls, item_raw):
+    def deserialize(cls, item_raw):
         dynamizer = Dynamizer()
         deserialized = {}
-        for name, attr in item_raw['Item'].items():
+        for name, attr in item_raw.items():
             deserialized[name] = dynamizer.decode(attr)
-        return deserialized
+        return cls(deserialized)
 
     @classmethod
     def _encode_key(cls, hash_key, range_key=None):
