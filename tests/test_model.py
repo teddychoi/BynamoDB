@@ -104,29 +104,32 @@ def test_save_item_nullable_attr_emptied(model_with_nullable_attr):
 @fixture
 def fx_query_test_model():
     class QueryTestModel(Model):
-        title = Attribute(STRING, hash_key=True)
-        content = Attribute(STRING)
+        published_at = Attribute(STRING, hash_key=True)
+        title = Attribute(STRING, range_key=True)
     QueryTestModel.create_table()
     return QueryTestModel
 
 
 @fixture
 def fx_query_test_items(fx_query_test_model):
-    for ch in ['a', 'b', 'c', 'd', 'e']:
-        fx_query_test_model.put_item({'title': ch * 5, 'content': ch.upper() * 5})
+    for i, ch in enumerate(['a', 'a', 'b', 'c', 'd', 'e']):
+        fx_query_test_model.put_item({'published_at': ch * 5, 'title': str(i) * 5})
 
 
 def test_scan(fx_query_test_model, fx_query_test_items):
     result = fx_query_test_model.scan()
-    assert len(result.items) == 5
+    assert len(result.items) == 6
     assert all(type(item) == fx_query_test_model for item in result)
-    assert all(item.title for item in result)
 
 
 def test_scan_with_filter_operator(fx_query_test_model, fx_query_test_items):
-    gt = GT('content', 'B')
+    gt = GT('published_at', 'bbbbb')
     result = fx_query_test_model.scan(filter_builder=gt)
-    assert len(result.items) == 4
-    for item in result:
-        print item.content
-    assert all([item.content > 'B' for item in result])
+    assert len(result.items) == 3
+    assert all([item.published_at > 'bbbbb' for item in result])
+
+
+def test_query(fx_query_test_model, fx_query_test_items):
+    result = fx_query_test_model.query({'published_at__eq': 'aaaaa'})
+    assert len(result.items) == 2
+    assert all(item.published_at == 'aaaaa' for item in result)

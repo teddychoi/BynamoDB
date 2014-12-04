@@ -78,12 +78,42 @@ class Model(object):
         )
 
     @classmethod
+    def query(cls, key_filter, filter_builder=None, **kwargs):
+        kwargs['key_conditions'] = cls._build_filter(key_filter)
+        if 'query_filter' in kwargs:
+            kwargs['query_filter'] = cls._build_filter(kwargs['query_filter'])
+        if filter_builder:
+            cls._build_filter_expression(filter_builder, kwargs)
+        result = cls._get_connection().query(cls.get_table_name(), **kwargs)
+        return Result(cls, result)
+
+    @classmethod
+    def _build_filter(cls, key_filter):
+        filters = {}
+        dynamizer = Dynamizer()
+        for field_and_op, value in key_filter.items():
+            try:
+                field, op = field_and_op.split('__')
+            except Exception:
+                raise ValueError('key filter expression is not valid')
+            # TODO: Implement multiple value encoding
+            filters[field] = {
+                'ComparisonOperator': op.upper(),
+                'AttributeValueList': [dynamizer.encode(value)]
+            }
+        return filters
+
+    @classmethod
     def scan(cls, filter_builder=None, **kwargs):
         if filter_builder:
-            kwargs['filter_expression'], kwargs['expression_attribute_values'] =\
-                filter_builder.build_exp()
+            cls._build_filter_expression(filter_builder, kwargs)
         result = cls._get_connection().scan(cls.get_table_name(), **kwargs)
         return Result(cls, result)
+
+    @classmethod
+    def _build_filter_expression(cls, filter_builder, kwargs):
+        kwargs['filter_expression'], kwargs['expression_attribute_values'] = \
+            filter_builder.build_exp()
 
     @classmethod
     def put_item(cls, data, **kwargs):
