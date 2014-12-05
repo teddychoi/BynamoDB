@@ -32,10 +32,56 @@ class Attribute(object):
         raise ValueError('Cannot change the class attribute')
 
 
+class Index(object):
+    hash_key = None
+    range_key = None
+    index_name = None
+    projection_type = None
+
+    _keys = None
+
+    @classmethod
+    def schema(cls):
+        return {
+            'IndexName': cls._get_index_name(),
+            'KeySchema': [key.schema() for key in cls._keys],
+            'Projection': {
+                'ProjectionType': cls.projection_type
+            }
+        }
+
+    @classmethod
+    def _get_index_name(cls):
+        return cls.index_name or cls.__name__
+
+
+class GlobalIndex(Index):
+    read_throughput = None
+    write_throughput = None
+
+    @classmethod
+    def schema(cls):
+        schema = super(GlobalIndex, cls).schema()
+        schema['ProvisionedThroughput'] = {
+            'ReadCapacityUnits': int(cls.read_throughput),
+            'WriteCapacityUnits': int(cls.write_throughput)
+        }
+        return schema
+
+
+class AllIndex(Index):
+    projection_type = 'ALL'
+
+
+class GlobalAllIndex(GlobalIndex):
+    projection_type = 'ALL'
+
+
 class ModelMeta(type):
     def __new__(cls, clsname, bases, dct):
         hash_key = None
         range_key = None
+        dct['_indexes'] = []
         for name, val in dct.items():
             if isinstance(val, Attribute):
                 val.attr_name = name
@@ -45,6 +91,11 @@ class ModelMeta(type):
                 elif val.range_key:
                     range_key = RangeKey(name, val.type)
                     dct['_range_key'] = name
+            elif type(val) == type and issubclass(val, Index):
+                val._keys = [HashKey(val.hash_key, dct[val.hash_key].type)]
+                if val.range_key:
+                    val._keys.append(RangeKey(val.range_key, dct[val.range_key].type))
+                dct['_indexes'].append(val)
         dct['_keys'] = [key for key in [hash_key, range_key] if key]
         return super(ModelMeta, cls).__new__(cls, clsname, bases, dct)
 
@@ -58,6 +109,7 @@ class Model(object):
     _conn = None
 
     _keys = None
+    _indexes = None
     _hash_key = None
     _range_key = None
 
@@ -81,14 +133,33 @@ class Model(object):
             'WriteCapacityUnits': write_throughput
         }
 
-        table_schema = [key.schema() for key in cls._keys]
-        table_definition = [key.definition() for key in cls._keys]
+        table_schema = []
+        table_definitions = []
+        seen_attrs = set()
+        for key in cls._keys:
+            table_schema.append(key.schema())
+            table_definitions.append(key.definition())
+            seen_attrs.add(key.name)
+
+        indexes = []
+        global_indexes = []
+        for index in cls._indexes:
+            if issubclass(index, GlobalIndex):
+                global_indexes.append(index.schema())
+            else:
+                indexes.append(index.schema())
+            for key in index._keys:
+                if key.name not in seen_attrs:
+                    table_definitions.append(key.definition())
+                    seen_attrs.add(key.name)
 
         cls._get_connection().create_table(
             table_name=table_name,
             key_schema=table_schema,
-            attribute_definitions=table_definition,
-            provisioned_throughput=raw_throughput
+            attribute_definitions=table_definitions,
+            provisioned_throughput=raw_throughput,
+            local_secondary_indexes=indexes or None,
+            global_secondary_indexes=global_indexes or None
         )
 
     @classmethod

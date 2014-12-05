@@ -4,7 +4,7 @@ from boto.dynamodb2.layer1 import DynamoDBConnection
 from bynamodb.exceptions import NullAttributeException
 from bynamodb.filter_expression import GT
 
-from bynamodb.model import Attribute, Model
+from bynamodb.model import Attribute, Model, GlobalAllIndex, AllIndex
 
 
 @fixture
@@ -33,6 +33,39 @@ def test_create_table(test_model):
         assert expected_key_name[key[u'KeyType']] == key[u'AttributeName']
 
 
+@fixture
+def fx_table_with_global_index():
+    class TestModel(Model):
+        attr_1 = Attribute(STRING, hash_key=True)
+        attr_2 = Attribute(STRING)
+
+        class TestIndex(GlobalAllIndex):
+            read_throughput = 5
+            write_throughput = 5
+
+            hash_key = 'attr_2'
+            range_key = 'attr_1'
+
+    return TestModel
+
+
+def test_create_table_with_global_index(fx_table_with_global_index):
+    fx_table_with_global_index.create_table()
+    table_description = DynamoDBConnection().describe_table(
+        fx_table_with_global_index.get_table_name()
+    )['Table']
+    global_indexes = table_description['GlobalSecondaryIndexes']
+    assert len(global_indexes) == 1
+    global_index = global_indexes[0]
+    assert global_index['IndexName'] == 'TestIndex'
+    expected_key_name = {
+        'HASH': 'attr_2',
+        'RANGE': 'attr_1'
+    }
+    for key in global_index['KeySchema']:
+        assert expected_key_name[key['KeyType']] == key['AttributeName']
+
+
 def test_get_item(test_model):
     test_model.create_table()
 
@@ -49,6 +82,37 @@ def test_get_item(test_model):
     assert item.hash_key_attr == hash_key_value
     assert item.range_key_attr == range_key_value
     assert item.attr_1 == attr1_value
+
+
+@fixture
+def fx_table_with_local_index():
+    class TestModel(Model):
+        attr_1 = Attribute(STRING, hash_key=True)
+        attr_2 = Attribute(STRING, range_key=True)
+        attr_3 = Attribute(STRING)
+
+        class TestIndex(AllIndex):
+            hash_key = 'attr_1'
+            range_key = 'attr_3'
+
+    return TestModel
+
+
+def test_create_table_with_local_index(fx_table_with_local_index):
+    fx_table_with_local_index.create_table()
+    table_description = DynamoDBConnection().describe_table(
+        fx_table_with_local_index.get_table_name()
+    )['Table']
+    local_indexes = table_description['LocalSecondaryIndexes']
+    assert len(local_indexes) == 1
+    local_index = local_indexes[0]
+    assert local_index['IndexName'] == 'TestIndex'
+    expected_key_name = {
+        'HASH': 'attr_1',
+        'RANGE': 'attr_3'
+    }
+    for key in local_index['KeySchema']:
+        assert expected_key_name[key['KeyType']] == key['AttributeName']
 
 
 def test_put_item(test_model):
