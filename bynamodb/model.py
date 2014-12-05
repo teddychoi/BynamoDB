@@ -9,8 +9,10 @@ from bynamodb.results import Result
 
 class Attribute(object):
     type = None
+    attr_name = None
     hash_key = False
     range_key = False
+
 
     def __init__(self, type, hash_key=False, range_key=False, null=False):
         self.type = type
@@ -20,17 +22,28 @@ class Attribute(object):
 
     def __get__(self, obj, cls=None):
         if isinstance(obj, Model):
-            return obj._data.get(self)
+            return obj._data.get(self.attr_name)
         return self
 
     def __set__(self, obj, value):
         if isinstance(obj, Model):
-            obj._data[self] = value
+            obj._data[self.attr_name] = value
             return
         raise ValueError('Cannot change the class attribute')
 
 
+class ModelMeta(type):
+    def __new__(cls, clsname, bases, dct):
+        for name, val in dct.items():
+            if isinstance(val, Attribute):
+                val.attr_name = name
+        return super(ModelMeta, cls).__new__(cls, clsname, bases, dct)
+
+
 class Model(object):
+
+    __metaclass__ = ModelMeta
+
     table_name = None
     _hash_key_name = None
     _range_key_name = None
@@ -134,7 +147,7 @@ class Model(object):
                 raise ValueError('Expected type for {0}: {1}, actual type: {2}'.format(
                     name, attr, attr_value_type
                 ))
-            data[name] = attr_value
+            data[attr.attr_name] = attr_value
         cls._get_connection().put_item(cls.get_table_name(), data, **kwargs)
 
     @classmethod

@@ -16,6 +16,12 @@ def test_model():
     return TestModel
 
 
+def test_table_attr_name(test_model):
+    assert test_model.hash_key_attr.attr_name == 'hash_key_attr'
+    assert test_model.range_key_attr.attr_name == 'range_key_attr'
+    assert test_model.attr_1.attr_name == 'attr_1'
+
+
 def test_create_table(test_model):
     test_model.create_table()
     table_description = DynamoDBConnection().describe_table(test_model.get_table_name())[u'Table']
