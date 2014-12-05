@@ -34,9 +34,18 @@ class Attribute(object):
 
 class ModelMeta(type):
     def __new__(cls, clsname, bases, dct):
+        hash_key = None
+        range_key = None
         for name, val in dct.items():
             if isinstance(val, Attribute):
                 val.attr_name = name
+                if val.hash_key:
+                    hash_key = HashKey(name, val.type)
+                    dct['_hash_key'] = name
+                elif val.range_key:
+                    range_key = RangeKey(name, val.type)
+                    dct['_range_key'] = name
+        dct['_keys'] = [key for key in [hash_key, range_key] if key]
         return super(ModelMeta, cls).__new__(cls, clsname, bases, dct)
 
 
@@ -45,10 +54,12 @@ class Model(object):
     __metaclass__ = ModelMeta
 
     table_name = None
-    _hash_key_name = None
-    _range_key_name = None
     _attributes = None
     _conn = None
+
+    _keys = None
+    _hash_key = None
+    _range_key = None
 
     def __init__(self, data):
         self._data = {}
@@ -70,23 +81,13 @@ class Model(object):
             'WriteCapacityUnits': write_throughput
         }
 
-        hash_key_name = cls._get_hash_key_name()
-        hash_key_attr = cls._get_attributes()[hash_key_name]
-        hash_key = HashKey(hash_key_name, hash_key_attr.type)
+        table_schema = [key.schema() for key in cls._keys]
+        table_definition = [key.definition() for key in cls._keys]
 
-        range_key = None
-        range_key_name = cls._get_range_key_name()
-        if range_key_name:
-            range_key_attr = cls._get_attributes()[range_key_name]
-            range_key = RangeKey(range_key_name, range_key_attr.type)
-
-        table_schema = [hash_key]
-        if range_key:
-            table_schema.append(range_key)
         cls._get_connection().create_table(
             table_name=table_name,
-            key_schema=[field.schema() for field in table_schema],
-            attribute_definitions=[field.definition() for field in table_schema],
+            key_schema=table_schema,
+            attribute_definitions=table_definition,
             provisioned_throughput=raw_throughput
         )
 
@@ -169,9 +170,9 @@ class Model(object):
     @classmethod
     def _encode_key(cls, hash_key, range_key=None):
         dynamizer = Dynamizer()
-        encoded = {cls._get_hash_key_name(): dynamizer.encode(hash_key)}
+        encoded = {cls._hash_key: dynamizer.encode(hash_key)}
         if range_key:
-            encoded.update({cls._get_range_key_name(): dynamizer.encode(range_key)})
+            encoded.update({cls._range_key: dynamizer.encode(range_key)})
         return encoded
 
     @classmethod
@@ -190,26 +191,6 @@ class Model(object):
             if issubclass(item_cls, Attribute):
                 cls._attributes[item_name] = getattr(cls, item_name)
         return cls._attributes
-
-    @classmethod
-    def _get_hash_key_name(cls):
-        if cls._hash_key_name:
-            return cls._hash_key_name
-        for name, value in cls._get_attributes().items():
-            if value.hash_key:
-                cls._hash_key_name = name
-                return cls._hash_key_name
-        return None
-
-    @classmethod
-    def _get_range_key_name(cls):
-        if cls._range_key_name:
-            return cls._range_key_name
-        for name, value in cls._get_attributes().items():
-            if value.range_key:
-                cls._range_key_name = name
-                return cls._range_key_name
-        return None
 
     @classmethod
     def _get_connection(cls):
