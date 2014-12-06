@@ -3,10 +3,10 @@ from boto.dynamodb2.fields import HashKey, RangeKey
 from boto.dynamodb.types import get_dynamodb_type
 from boto.dynamodb2.types import Dynamizer
 
-from bynamodb.attributes import Attribute
-from bynamodb.exceptions import NullAttributeException
-from bynamodb.indexes import Index, GlobalIndex
-from bynamodb.results import Result
+from .attributes import Attribute
+from .exceptions import NullAttributeException
+from .indexes import Index, GlobalIndex
+from .results import Result
 
 
 class ModelMeta(type):
