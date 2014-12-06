@@ -155,6 +155,24 @@ def test_save_item_with_missing_attr(fx_test_model):
 
 
 @fixture
+def fx_model_with_default_attr():
+    class TestModelDefault(Model):
+        hash_key = Attribute(STRING, hash_key=True)
+        attr = Attribute(STRING, default='Default value')
+    return TestModelDefault
+
+
+def test_model_default_attr(fx_model_with_default_attr):
+    fx_model_with_default_attr.create_table()
+    hash_key_value = 'value'
+    fx_model_with_default_attr.put_item({
+        'hash_key': hash_key_value
+    })
+    item = fx_model_with_default_attr.get_item(hash_key_value)
+    assert item.attr == 'Default value'
+
+
+@fixture
 def fx_model_with_nullable_attr():
     class TestModelWithNullable(Model):
         hash_key = Attribute(STRING, hash_key=True)

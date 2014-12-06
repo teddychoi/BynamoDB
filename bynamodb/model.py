@@ -15,11 +15,12 @@ class Attribute(object):
     range_key = False
 
 
-    def __init__(self, type, hash_key=False, range_key=False, null=False):
+    def __init__(self, type, hash_key=False, range_key=False, null=False, default=None):
         self.type = type
         self.hash_key = hash_key
         self.range_key = range_key
         self.null = null
+        self.default = default
 
     def __get__(self, obj, cls=None):
         if isinstance(obj, Model):
@@ -58,11 +59,21 @@ class Model(object):
 
     def __init__(self, data):
         self._data = {}
+        self._set_defaults()
         for name, value in data.items():
             if name in dir(self):
                 setattr(self, name, value)
             else:
                 continue
+
+    def _set_defaults(self):
+        for attr in self._get_attributes().values():
+            if attr.default:
+                value = attr.default
+                if callable(value):
+                    value = value()
+                setattr(self, attr.attr_name, value)
+
 
     def save(self):
         self._put_item(self)
