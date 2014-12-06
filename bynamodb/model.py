@@ -222,9 +222,7 @@ class Model(object):
         cls._attributes = {}
         for item_name in dir(cls):
             item_cls = getattr(getattr(cls, item_name), '__class__', None)
-            if item_cls is None:
-                continue
-            if issubclass(item_cls, Attribute):
+            if item_cls is not None and issubclass(item_cls, Attribute):
                 cls._attributes[item_name] = getattr(cls, item_name)
         return cls._attributes
 
