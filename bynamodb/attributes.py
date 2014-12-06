@@ -1,4 +1,5 @@
-from boto.dynamodb2.types import STRING, STRING_SET, BINARY, BINARY_SET, NUMBER, NUMBER_SET
+from boto.dynamodb2.types import (STRING, STRING_SET, BINARY, BINARY_SET,
+                                  NUMBER, NUMBER_SET)
 
 
 class Attribute(object):
@@ -7,7 +8,8 @@ class Attribute(object):
     range_key = False
     type = None
 
-    def __init__(self, hash_key=False, range_key=False, null=False, default=None):
+    def __init__(self, hash_key=False, range_key=False,
+                 null=False, default=None):
         self.hash_key = hash_key
         self.range_key = range_key
         self.null = null

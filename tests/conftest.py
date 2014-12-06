@@ -9,6 +9,7 @@ from bynamodb import patch_dynamodb_connection
 
 process = None
 
+
 def pytest_configure():
     global process
     shutil.rmtree('tests/local_dynamodb/testdb', True)

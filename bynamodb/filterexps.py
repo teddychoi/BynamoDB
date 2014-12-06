@@ -39,7 +39,9 @@ class LogicalOperator(Operator):
 
     def _build_exp(self, attr_values):
         return '({0} {1} {2})'.format(
-            self.op1._build_exp(attr_values), self.operator, self.op2._build_exp(attr_values)
+            self.op1._build_exp(attr_values),
+            self.operator,
+            self.op2._build_exp(attr_values)
         )
 
 
@@ -71,6 +73,7 @@ class EQ(ComparisonOperator):
 
 class GT(ComparisonOperator):
     operator = '>'
+
 
 class LT(ComparisonOperator):
     operator = '<'

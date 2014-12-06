@@ -25,7 +25,8 @@ def test_table_attr_name(fx_test_model):
 
 def test_create_table(fx_test_model):
     fx_test_model.create_table()
-    table_description = DynamoDBConnection().describe_table(fx_test_model.get_table_name())['Table']
+    table_description = DynamoDBConnection().describe_table(
+        fx_test_model.get_table_name())['Table']
     expected_key_name = {
         'HASH': 'hash_key_attr',
         'RANGE': 'range_key_attr'
@@ -128,7 +129,8 @@ def test_put_item(fx_test_model):
     }
     fx_test_model.put_item(attrs)
 
-    item = fx_test_model.get_item(hash_key=hash_key_value, range_key=range_key_value)
+    item = fx_test_model.get_item(hash_key=hash_key_value,
+                                  range_key=range_key_value)
     assert item.hash_key_attr == hash_key_value
     assert item.range_key_attr == range_key_value
     assert item.attr_1 == attr1_value
@@ -202,7 +204,8 @@ def fx_query_test_model():
 @fixture
 def fx_query_test_items(fx_query_test_model):
     for i, ch in enumerate(['a', 'a', 'b', 'c', 'd', 'e']):
-        fx_query_test_model.put_item({'published_at': ch * 5, 'title': str(i) * 5})
+        fx_query_test_model.put_item(
+            {'published_at': ch * 5, 'title': str(i) * 5})
 
 
 def test_scan(fx_query_test_model, fx_query_test_items):

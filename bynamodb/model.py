@@ -17,7 +17,8 @@ class ModelMeta(type):
             elif type(val) == type and issubclass(val, Index):
                 val._keys = [HashKey(val.hash_key, dct[val.hash_key].type)]
                 if val.range_key:
-                    val._keys.append(RangeKey(val.range_key, dct[val.range_key].type))
+                    val._keys.append(RangeKey(val.range_key,
+                                              dct[val.range_key].type))
         return super(ModelMeta, mcs).__new__(mcs, clsname, bases, dct)
 
 
@@ -48,7 +49,6 @@ class Model(object):
                 if callable(value):
                     value = value()
                 setattr(self, attr.attr_name, value)
-
 
     def save(self):
         self._put_item(self)
@@ -140,14 +140,16 @@ class Model(object):
             attr_value = getattr(item, name, None)
             if attr_value is None:
                 if not attr.null:
-                    raise NullAttributeException('Attribute {0} cannot be null'.format(name))
+                    raise NullAttributeException(
+                        'Attribute {0} cannot be null'.format(name))
                 else:
                     continue
             attr_value_type = get_dynamodb_type(attr_value)
             if attr_value_type != attr.type:
-                raise ValueError('Expected type for {0}: {1}, actual type: {2}'.format(
-                    name, attr, attr_value_type
-                ))
+                raise ValueError(
+                    'Expected type for {0}: {1}, actual type: {2}'.format(
+                        name, attr, attr_value_type
+                    ))
             data[attr.attr_name] = attr_value
         cls._get_connection().put_item(cls.get_table_name(), data, **kwargs)
 
@@ -172,7 +174,8 @@ class Model(object):
         dynamizer = Dynamizer()
         encoded = {cls._get_hash_key().name: dynamizer.encode(hash_key)}
         if range_key:
-            encoded.update({cls._get_range_key().name: dynamizer.encode(range_key)})
+            encoded.update(
+                {cls._get_range_key().name: dynamizer.encode(range_key)})
         return encoded
 
     @classmethod
@@ -222,7 +225,6 @@ class Model(object):
             if type(attr) == type and issubclass(attr, Index):
                 cls._indexes.append(attr)
         return cls._indexes
-
 
     @classmethod
     def _get_connection(cls):
