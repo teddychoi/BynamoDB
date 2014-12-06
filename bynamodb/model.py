@@ -3,35 +3,10 @@ from boto.dynamodb2.fields import HashKey, RangeKey
 from boto.dynamodb.types import get_dynamodb_type
 from boto.dynamodb2.types import Dynamizer
 
+from bynamodb.attributes import Attribute
 from bynamodb.exceptions import NullAttributeException
 from bynamodb.indexes import Index, GlobalIndex
 from bynamodb.results import Result
-
-
-class Attribute(object):
-    type = None
-    attr_name = None
-    hash_key = False
-    range_key = False
-
-
-    def __init__(self, type, hash_key=False, range_key=False, null=False, default=None):
-        self.type = type
-        self.hash_key = hash_key
-        self.range_key = range_key
-        self.null = null
-        self.default = default
-
-    def __get__(self, obj, cls=None):
-        if isinstance(obj, Model):
-            return obj._data.get(self.attr_name)
-        return self
-
-    def __set__(self, obj, value):
-        if isinstance(obj, Model):
-            obj._data[self.attr_name] = value
-            return
-        raise ValueError('Cannot change the class attribute')
 
 
 class ModelMeta(type):

@@ -1,19 +1,19 @@
 from _pytest.python import raises, fixture
-from boto.dynamodb2.types import STRING
 from boto.dynamodb2.layer1 import DynamoDBConnection
+
+from bynamodb.attributes import StringAttribute
 from bynamodb.exceptions import NullAttributeException
 from bynamodb.filterexps import GT
-
 from bynamodb.indexes import GlobalAllIndex, AllIndex
-from bynamodb.model import Attribute, Model
+from bynamodb.model import Model
 
 
 @fixture
 def fx_test_model():
     class TestModel(Model):
-        hash_key_attr = Attribute(STRING, hash_key=True)
-        range_key_attr = Attribute(STRING, range_key=True)
-        attr_1 = Attribute(STRING)
+        hash_key_attr = StringAttribute(hash_key=True)
+        range_key_attr = StringAttribute(range_key=True)
+        attr_1 = StringAttribute()
     return TestModel
 
 
@@ -37,8 +37,8 @@ def test_create_table(fx_test_model):
 @fixture
 def fx_table_with_global_index():
     class TestModel(Model):
-        attr_1 = Attribute(STRING, hash_key=True)
-        attr_2 = Attribute(STRING)
+        attr_1 = StringAttribute(hash_key=True)
+        attr_2 = StringAttribute()
 
         class TestIndex(GlobalAllIndex):
             read_throughput = 5
@@ -70,9 +70,9 @@ def test_create_table_with_global_index(fx_table_with_global_index):
 @fixture
 def fx_table_with_local_index():
     class TestModel(Model):
-        attr_1 = Attribute(STRING, hash_key=True)
-        attr_2 = Attribute(STRING, range_key=True)
-        attr_3 = Attribute(STRING)
+        attr_1 = StringAttribute(hash_key=True)
+        attr_2 = StringAttribute(range_key=True)
+        attr_3 = StringAttribute()
 
         class TestIndex(AllIndex):
             hash_key = 'attr_1'
@@ -157,8 +157,8 @@ def test_save_item_with_missing_attr(fx_test_model):
 @fixture
 def fx_model_with_default_attr():
     class TestModelDefault(Model):
-        hash_key = Attribute(STRING, hash_key=True)
-        attr = Attribute(STRING, default='Default value')
+        hash_key = StringAttribute(hash_key=True)
+        attr = StringAttribute(default='Default value')
     return TestModelDefault
 
 
@@ -175,8 +175,8 @@ def test_model_default_attr(fx_model_with_default_attr):
 @fixture
 def fx_model_with_nullable_attr():
     class TestModelWithNullable(Model):
-        hash_key = Attribute(STRING, hash_key=True)
-        attr = Attribute(STRING, null=True)
+        hash_key = StringAttribute(hash_key=True)
+        attr = StringAttribute(null=True)
     return TestModelWithNullable
 
 
@@ -193,8 +193,8 @@ def test_save_item_nullable_attr_emptied(fx_model_with_nullable_attr):
 @fixture
 def fx_query_test_model():
     class QueryTestModel(Model):
-        published_at = Attribute(STRING, hash_key=True)
-        title = Attribute(STRING, range_key=True)
+        published_at = StringAttribute(hash_key=True)
+        title = StringAttribute(range_key=True)
     QueryTestModel.create_table()
     return QueryTestModel
 
