@@ -78,26 +78,15 @@ class GlobalAllIndex(GlobalIndex):
 
 
 class ModelMeta(type):
-    def __new__(cls, clsname, bases, dct):
-        hash_key = None
-        range_key = None
-        dct['_indexes'] = []
+    def __new__(mcs, clsname, bases, dct):
         for name, val in dct.items():
             if isinstance(val, Attribute):
                 val.attr_name = name
-                if val.hash_key:
-                    hash_key = HashKey(name, val.type)
-                    dct['_hash_key'] = name
-                elif val.range_key:
-                    range_key = RangeKey(name, val.type)
-                    dct['_range_key'] = name
             elif type(val) == type and issubclass(val, Index):
                 val._keys = [HashKey(val.hash_key, dct[val.hash_key].type)]
                 if val.range_key:
                     val._keys.append(RangeKey(val.range_key, dct[val.range_key].type))
-                dct['_indexes'].append(val)
-        dct['_keys'] = [key for key in [hash_key, range_key] if key]
-        return super(ModelMeta, cls).__new__(cls, clsname, bases, dct)
+        return super(ModelMeta, mcs).__new__(mcs, clsname, bases, dct)
 
 
 class Model(object):
@@ -110,8 +99,6 @@ class Model(object):
 
     _keys = None
     _indexes = None
-    _hash_key = None
-    _range_key = None
 
     def __init__(self, data):
         self._data = {}
@@ -136,14 +123,14 @@ class Model(object):
         table_schema = []
         table_definitions = []
         seen_attrs = set()
-        for key in cls._keys:
+        for key in cls._get_keys():
             table_schema.append(key.schema())
             table_definitions.append(key.definition())
             seen_attrs.add(key.name)
 
         indexes = []
         global_indexes = []
-        for index in cls._indexes:
+        for index in cls._get_indexes():
             if issubclass(index, GlobalIndex):
                 global_indexes.append(index.schema())
             else:
@@ -241,14 +228,36 @@ class Model(object):
     @classmethod
     def _encode_key(cls, hash_key, range_key=None):
         dynamizer = Dynamizer()
-        encoded = {cls._hash_key: dynamizer.encode(hash_key)}
+        encoded = {cls._get_hash_key().name: dynamizer.encode(hash_key)}
         if range_key:
-            encoded.update({cls._range_key: dynamizer.encode(range_key)})
+            encoded.update({cls._get_range_key().name: dynamizer.encode(range_key)})
         return encoded
 
     @classmethod
     def get_table_name(cls):
         return cls.table_name or cls.__name__
+
+    @classmethod
+    def _get_keys(cls):
+        if cls._keys:
+            return cls._keys
+        hash_key = None
+        range_key = None
+        for attr in cls._get_attributes().values():
+            if attr.hash_key:
+                hash_key = HashKey(attr.attr_name, attr.type)
+            elif attr.range_key:
+                range_key = RangeKey(attr.attr_name, attr.type)
+        cls._keys = [key for key in [hash_key, range_key] if key]
+        return cls._keys
+
+    @classmethod
+    def _get_hash_key(cls):
+        return cls._get_keys()[0]
+
+    @classmethod
+    def _get_range_key(cls):
+        return cls._get_keys()[1]
 
     @classmethod
     def _get_attributes(cls):
@@ -262,6 +271,18 @@ class Model(object):
             if issubclass(item_cls, Attribute):
                 cls._attributes[item_name] = getattr(cls, item_name)
         return cls._attributes
+
+    @classmethod
+    def _get_indexes(cls):
+        if cls._indexes:
+            return cls._indexes
+        cls._indexes = []
+        for item_name in dir(cls):
+            attr = getattr(cls, item_name)
+            if type(attr) == type and issubclass(attr, Index):
+                cls._indexes.append(attr)
+        return cls._indexes
+
 
     @classmethod
     def _get_connection(cls):
