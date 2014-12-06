@@ -1,6 +1,6 @@
 from _pytest.python import fixture
 
-from bynamodb.filter_expression import Contains, GT, OR
+from bynamodb.filterexps import Contains, GT, OR
 
 
 @fixture

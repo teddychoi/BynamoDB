@@ -4,7 +4,7 @@ from boto.dynamodb.types import get_dynamodb_type
 from boto.dynamodb2.types import Dynamizer
 
 from bynamodb.exceptions import NullAttributeException
-from bynamodb.index import Index, GlobalIndex
+from bynamodb.indexes import Index, GlobalIndex
 from bynamodb.results import Result
 
 
