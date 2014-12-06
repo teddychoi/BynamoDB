@@ -4,7 +4,8 @@ from boto.dynamodb2.layer1 import DynamoDBConnection
 from bynamodb.exceptions import NullAttributeException
 from bynamodb.filter_expression import GT
 
-from bynamodb.model import Attribute, Model, GlobalAllIndex, AllIndex
+from bynamodb.index import GlobalAllIndex, AllIndex
+from bynamodb.model import Attribute, Model
 
 
 @fixture
