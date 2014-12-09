@@ -1,6 +1,29 @@
 from boto.dynamodb.types import Dynamizer
 
 
+class Operator(object):
+    """Abstract operators used in the filter expression.
+
+    """
+    def build_exp(self):
+        """Generate the filter expression string and the attribute values
+        used in :class:`boto.dynamodb2.layer1.DynamoDBConnection`.
+        """
+        attr_values = AttributeValues()
+        return self._build_exp(attr_values), attr_values.data
+
+    def _build_exp(self, attr_values):
+        raise NotImplemented
+
+    def apply_and(self, operator):
+        """Compose the operator with another operator using `and`"""
+        return AND(self, operator)
+
+    def apply_or(self, operator):
+        """Compose the operator with another operator using `or`"""
+        return OR(self, operator)
+
+
 class AttributeValues(object):
     def __init__(self):
         self.data = {}
@@ -13,21 +36,6 @@ class AttributeValues(object):
         self.data[key] = attr_value
         self._current_key += 1
         return key
-
-
-class Operator(object):
-    def build_exp(self):
-        attr_values = AttributeValues()
-        return self._build_exp(attr_values), attr_values.data
-
-    def _build_exp(self, attr_values):
-        raise NotImplemented
-
-    def apply_and(self, operator):
-        return AND(self, operator)
-
-    def apply_or(self, operator):
-        return OR(self, operator)
 
 
 class LogicalOperator(Operator):

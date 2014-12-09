@@ -10,6 +10,7 @@ from .results import Result
 
 
 class ModelMeta(type):
+    """Model meta class"""
     def __new__(mcs, clsname, bases, dct):
         for name, val in dct.items():
             if isinstance(val, Attribute):
@@ -23,17 +24,30 @@ class ModelMeta(type):
 
 
 class Model(object):
+    """Defines schema of a DynamoDB table with
+    :class:`~bynamodb.attributes.Attribute` and
+    :class:`~bynamodb.attributes.indexes.Index`.
+    You can execute APIs of the table through the model.
 
+    """
     __metaclass__ = ModelMeta
 
+    #: (:class:`str`) The table name.
+    #: # If omitted, the Model class name will be the table name.
     table_name = None
+
     _attributes = None
     _conn = None
-
     _keys = None
     _indexes = None
 
     def __init__(self, data):
+        """An object of the Model represents an item of the model.
+
+        :param data: key value of the item.
+        :type data: :class:`collections.Mapping`
+
+        """
         self._data = {}
         self._set_defaults()
         for name, value in data.items():
@@ -55,6 +69,7 @@ class Model(object):
 
     @classmethod
     def create_table(cls, read_throughput=5, write_throughput=5):
+        """Create the table as the schema definition."""
         table_name = cls.get_table_name()
 
         raw_throughput = {
@@ -93,6 +108,13 @@ class Model(object):
 
     @classmethod
     def query(cls, key_filter, filter_builder=None, **kwargs):
+        """High level query API.
+
+        :param key_filter: key conditions of the query.
+        :type key_filter: :class:`collections.Mapping`
+        :param filter_builder: filter expression builder.
+        :type filter_builder: :class:`~bynamodb.filterexps.Operator`
+        """
         kwargs['key_conditions'] = cls._build_filter(key_filter)
         if 'query_filter' in kwargs:
             kwargs['query_filter'] = cls._build_filter(kwargs['query_filter'])
@@ -119,6 +141,12 @@ class Model(object):
 
     @classmethod
     def scan(cls, filter_builder=None, **kwargs):
+        """High level scan API.
+
+        :param filter_builder: filter expression builder.
+        :type filter_builder: :class:`~bynamodb.filterexps.Operator`
+
+        """
         if filter_builder:
             cls._build_filter_expression(filter_builder, kwargs)
         result = cls._get_connection().scan(cls.get_table_name(), **kwargs)
@@ -131,6 +159,12 @@ class Model(object):
 
     @classmethod
     def put_item(cls, data, **kwargs):
+        """Put item to the table.
+
+        :param data: key value of the item.
+        :type data: :class:`collections.Mapping`
+
+        """
         cls._put_item(cls(data), **kwargs)
 
     @classmethod
@@ -155,6 +189,7 @@ class Model(object):
 
     @classmethod
     def get_item(cls, hash_key=None, range_key=None, **kwargs):
+        """ Get item from the table."""
         if hash_key:
             kwargs['key'] = cls._encode_key(hash_key, range_key)
         raw_data = cls._get_connection().get_item(cls.get_table_name(),
@@ -163,6 +198,10 @@ class Model(object):
 
     @classmethod
     def deserialize(cls, item_raw):
+        """Translate the raw item data from the DynamoDBConnection
+        to the item object.
+
+        """
         dynamizer = Dynamizer()
         deserialized = {}
         for name, attr in item_raw.items():

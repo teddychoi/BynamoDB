@@ -1,4 +1,8 @@
 class Result(object):
+    """The result of the :func:`~bynamodb.Model.query` and
+    :func:`~bynamodb.Model.scan`.
+
+    """
     def __init__(self, model, result_set):
         self.model = model
         self.consumed_capacity = result_set.get('ConsumedCapacity')

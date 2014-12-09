@@ -3,9 +3,18 @@ from boto.dynamodb2.types import (STRING, STRING_SET, BINARY, BINARY_SET,
 
 
 class Attribute(object):
+    """Declare the attribute of the model as a descriptor."""
+
+    # (:class:`str`) The attribute name. It is assigned by Model meta class.
     attr_name = None
+
+    # (:class:`bool`) `True` if the attribute is the hash key of the model.
     hash_key = False
+
+    # (:class:`bool`) `True` if the attribute is the range key of the model.
     range_key = False
+
+    # (:class:`str`) Type string defined in :mod:`boto.dynamodb2.types`
     type = None
 
     def __init__(self, hash_key=False, range_key=False,

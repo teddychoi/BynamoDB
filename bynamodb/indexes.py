@@ -1,7 +1,17 @@
 class Index(object):
+    """Declare the index of the model as a class."""
+
+    # (:class:`str`) The attribute name used for the index hash key.
     hash_key = None
+
+    # (:class:`str`) The attribute name used for the index hash key.
     range_key = None
+
+    #: (:class:`str`) The index name.
+    #: # If omitted, the Index class name will be the table name.
     index_name = None
+
+    #: (:class:`str`) The projection type of the index.
     projection_type = None
 
     _keys = None
