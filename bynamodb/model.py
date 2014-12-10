@@ -106,17 +106,17 @@ class Model(object):
         )
 
     @classmethod
-    def put_item(cls, data, **kwargs):
+    def put_item(cls, **data):
         """Put item to the table.
 
         :param data: key value of the item.
         :type data: :class:`collections.Mapping`
 
         """
-        cls._put_item(cls(data), **kwargs)
+        cls._put_item(cls(data))
 
     @classmethod
-    def _put_item(cls, item, **kwargs):
+    def _put_item(cls, item):
         data = {}
         for name, attr in cls._get_attributes().items():
             attr_value = getattr(item, name, None)
@@ -133,7 +133,7 @@ class Model(object):
                         name, attr, attr_value_type
                     ))
             data[attr.attr_name] = attr_value
-        cls._get_connection().put_item(cls.get_table_name(), data, **kwargs)
+        cls._get_connection().put_item(cls.get_table_name(), data)
 
     @classmethod
     def get_item(cls, hash_key, range_key=None):

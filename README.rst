@@ -39,13 +39,13 @@ Put Item & Get Item
 ===================
 .. code-block:: python
 
-    Article.put_item({
-        'published_at': '2014-12-09',
-        'id': '1',
-        'title': 'This is the title',
-        'content': 'This is the content',
-        'author': 'Bochul Choi'
-    })
+    Article.put_item(
+        published_at='2014-12-09',
+        id='1',
+        title='This is the title',
+        content='This is the content',
+        author='Bochul Choi'
+    )
     article = Article.get_item(hash_key='2014-12-09', range_key='1')
 
 Simple Scan & Query

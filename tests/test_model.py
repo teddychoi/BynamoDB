@@ -105,11 +105,11 @@ def test_get_item(fx_test_model):
     hash_key_value = 'Hash Key Value'
     range_key_value = 'Range Key Value'
     attr1_value = 'Attribute1 Value'
-    fx_test_model.put_item({
-        'hash_key_attr': hash_key_value,
-        'range_key_attr': range_key_value,
-        'attr_1': attr1_value
-    })
+    fx_test_model.put_item(
+        hash_key_attr=hash_key_value,
+        range_key_attr=range_key_value,
+        attr_1=attr1_value
+    )
 
     item = fx_test_model.get_item(hash_key_value, range_key_value)
     assert item.hash_key_attr == hash_key_value
@@ -127,7 +127,7 @@ def test_put_item(fx_test_model):
         'range_key_attr': range_key_value,
         'attr_1': attr1_value
     }
-    fx_test_model.put_item(attrs)
+    fx_test_model.put_item(**attrs)
 
     item = fx_test_model.get_item(hash_key=hash_key_value,
                                   range_key=range_key_value)
@@ -143,7 +143,7 @@ def test_put_item_with_missing_attr(fx_test_model):
         'range_key_attr': 'range_key'
     }
     with raises(NullAttributeException):
-        fx_test_model.put_item(attrs)
+        fx_test_model.put_item(**attrs)
 
 
 def test_save_item_with_missing_attr(fx_test_model):
@@ -167,9 +167,7 @@ def fx_model_with_default_attr():
 def test_model_default_attr(fx_model_with_default_attr):
     fx_model_with_default_attr.create_table()
     hash_key_value = 'value'
-    fx_model_with_default_attr.put_item({
-        'hash_key': hash_key_value
-    })
+    fx_model_with_default_attr.put_item(hash_key=hash_key_value)
     item = fx_model_with_default_attr.get_item(hash_key_value)
     assert item.attr == 'Default value'
 
@@ -204,8 +202,7 @@ def fx_query_test_model():
 @fixture
 def fx_query_test_items(fx_query_test_model):
     for i, ch in enumerate(['a', 'a', 'b', 'c', 'd', 'e']):
-        fx_query_test_model.put_item(
-            {'published_at': ch * 5, 'title': str(i) * 5})
+        fx_query_test_model.put_item(published_at=ch * 5, title=str(i) * 5)
 
 
 def test_scan(fx_query_test_model, fx_query_test_items):
