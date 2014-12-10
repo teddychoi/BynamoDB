@@ -188,12 +188,10 @@ class Model(object):
         cls._get_connection().put_item(cls.get_table_name(), data, **kwargs)
 
     @classmethod
-    def get_item(cls, hash_key=None, range_key=None, **kwargs):
+    def get_item(cls, hash_key, range_key=None):
         """ Get item from the table."""
-        if hash_key:
-            kwargs['key'] = cls._encode_key(hash_key, range_key)
-        raw_data = cls._get_connection().get_item(cls.get_table_name(),
-                                                  **kwargs)
+        key = cls._encode_key(hash_key, range_key)
+        raw_data = cls._get_connection().get_item(cls.get_table_name(), key)
         return cls.from_raw_data(raw_data['Item'])
 
     @classmethod
