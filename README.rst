@@ -48,8 +48,18 @@ Put Item & Get Item
     })
     article = Article.get_item(hash_key='2014-12-09', range_key='1')
 
-Scan & Query
-============
+Simple Scan & Query
+===================
+.. code-block:: python
+
+    # Scan all articles that the title starts with "Title"
+    articles = Article.scan(title__startswith='Title')
+
+    # Query articles that author is "Bochul Choi"
+    articles = Article.query(author__eq='Bochul Choi', index_name='AuthorIndex')
+
+Complex lookups in Scan & Query
+===============================
 .. code-block:: python
 
     from bynamodb.filterexps import Contains, GT
@@ -64,7 +74,7 @@ Scan & Query
     
     # Query articles that match the filter expression and the author condition
     author = 'Bochul Choi'
-    articles = Atricle.query({'author__eq': author}, filter_exp,
+    articles = Atricle.query(author__eq: author, filter_builder=filter_exp,
                              index_name='AuthorIndex')
     
     

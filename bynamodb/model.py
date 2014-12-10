@@ -6,7 +6,6 @@ from boto.dynamodb2.types import Dynamizer
 from .attributes import Attribute
 from .exceptions import NullAttributeException
 from .indexes import Index, GlobalIndex
-from .results import Result
 
 
 class ModelMeta(type):
@@ -107,57 +106,6 @@ class Model(object):
         )
 
     @classmethod
-    def query(cls, key_filter, filter_builder=None, **kwargs):
-        """High level query API.
-
-        :param key_filter: key conditions of the query.
-        :type key_filter: :class:`collections.Mapping`
-        :param filter_builder: filter expression builder.
-        :type filter_builder: :class:`~bynamodb.filterexps.Operator`
-        """
-        kwargs['key_conditions'] = cls._build_filter(key_filter)
-        if 'query_filter' in kwargs:
-            kwargs['query_filter'] = cls._build_filter(kwargs['query_filter'])
-        if filter_builder:
-            cls._build_filter_expression(filter_builder, kwargs)
-        result = cls._get_connection().query(cls.get_table_name(), **kwargs)
-        return Result(cls, result)
-
-    @classmethod
-    def _build_filter(cls, key_filter):
-        filters = {}
-        dynamizer = Dynamizer()
-        for field_and_op, value in key_filter.items():
-            try:
-                field, op = field_and_op.split('__')
-            except Exception:
-                raise ValueError('key filter expression is not valid')
-            # TODO: Implement multiple value encoding
-            filters[field] = {
-                'ComparisonOperator': op.upper(),
-                'AttributeValueList': [dynamizer.encode(value)]
-            }
-        return filters
-
-    @classmethod
-    def scan(cls, filter_builder=None, **kwargs):
-        """High level scan API.
-
-        :param filter_builder: filter expression builder.
-        :type filter_builder: :class:`~bynamodb.filterexps.Operator`
-
-        """
-        if filter_builder:
-            cls._build_filter_expression(filter_builder, kwargs)
-        result = cls._get_connection().scan(cls.get_table_name(), **kwargs)
-        return Result(cls, result)
-
-    @classmethod
-    def _build_filter_expression(cls, filter_builder, kwargs):
-        kwargs['filter_expression'], kwargs['expression_attribute_values'] = \
-            filter_builder.build_exp()
-
-    @classmethod
     def put_item(cls, data, **kwargs):
         """Put item to the table.
 
@@ -195,6 +143,59 @@ class Model(object):
         return cls.from_raw_data(raw_data['Item'])
 
     @classmethod
+    def query(cls, index_name=None, filter_builder=None, **key_conditions):
+        """High level query API.
+
+        :param key_filter: key conditions of the query.
+        :type key_filter: :class:`collections.Mapping`
+        :param filter_builder: filter expression builder.
+        :type filter_builder: :class:`~bynamodb.filterexps.Operator`
+        """
+        query_kwargs = {
+            'key_conditions': cls._build_filter(key_conditions),
+            'index_name': index_name
+        }
+        if filter_builder:
+            cls._build_filter_expression(filter_builder, query_kwargs)
+
+        while True:
+            result = cls._get_connection().query(
+                cls.get_table_name(),
+                **query_kwargs
+            )
+            for raw_item in result.get('Items'):
+                yield cls.from_raw_data(raw_item)
+
+            last_evaluated_key = cls._get_last_key(result)
+            if last_evaluated_key:
+                query_kwargs['exclusive_start_key'] = last_evaluated_key
+            else:
+                raise StopIteration
+
+    @classmethod
+    def scan(cls, filter_builder=None, **scan_filter):
+        """High level scan API.
+
+        :param filter_builder: filter expression builder.
+        :type filter_builder: :class:`~bynamodb.filterexps.Operator`
+
+        """
+        scan_kwargs = {'scan_filter': cls._build_filter(scan_filter)}
+        if filter_builder:
+            cls._build_filter_expression(filter_builder, scan_kwargs)
+        while True:
+            result = cls._get_connection().scan(cls.get_table_name(),
+                                                **scan_kwargs)
+            for raw_item in result.get('Items'):
+                yield cls.from_raw_data(raw_item)
+
+            last_evaluated_key = cls._get_last_key(result)
+            if last_evaluated_key:
+                scan_kwargs['exclusive_start_key'] = last_evaluated_key
+            else:
+                raise StopIteration
+
+    @classmethod
     def from_raw_data(cls, item_raw):
         """Translate the raw item data from the DynamoDBConnection
         to the item object.
@@ -205,6 +206,40 @@ class Model(object):
         for name, attr in item_raw.items():
             deserialized[name] = dynamizer.decode(attr)
         return cls(deserialized)
+
+    @classmethod
+    def _build_filter(cls, key_filter):
+        if not key_filter:
+            return None
+        filters = {}
+        dynamizer = Dynamizer()
+        for field_and_op, value in key_filter.items():
+            try:
+                field, op = field_and_op.split('__')
+            except Exception:
+                raise ValueError('key filter expression is not valid')
+            # TODO: Implement multiple value encoding
+            filters[field] = {
+                'ComparisonOperator': op.upper(),
+                'AttributeValueList': [dynamizer.encode(value)]
+            }
+        return filters
+
+    @classmethod
+    def _build_filter_expression(cls, filter_builder, kwargs):
+        kwargs['filter_expression'], kwargs['expression_attribute_values'] = \
+            filter_builder.build_exp()
+
+    @classmethod
+    def _get_last_key(cls, result):
+        last_evaluated_key = result.get('LastEvaluatedKey')
+        if not last_evaluated_key:
+            return None
+        last_key = {}
+        dynamizer = Dynamizer()
+        for key, value in last_evaluated_key.items():
+            last_key[key] = dynamizer.decode(value)
+        return last_key
 
     @classmethod
     def _encode_key(cls, hash_key, range_key=None):
