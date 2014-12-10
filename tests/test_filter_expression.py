@@ -34,8 +34,8 @@ def test_build_or(fx_test_contain_operator, fx_test_gt_operator):
 
 
 def test_nest_or(fx_test_contain_operator, fx_test_gt_operator):
-    filter_exp, attr_values = fx_test_contain_operator.apply_or(
-        fx_test_gt_operator).build_exp()
+    filter_exp, attr_values = \
+        (fx_test_contain_operator | fx_test_gt_operator).build_exp()
     assert filter_exp == '(contains(content, :1) or birth_year > :2)'
     assert attr_values[':1'] == {'S': 'keyword'}
     assert attr_values[':2'] == {'N': '1994'}

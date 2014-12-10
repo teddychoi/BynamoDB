@@ -65,9 +65,8 @@ Complex lookups in Scan & Query
     from bynamodb.filterexps import Contains, GT
     
     keyword = 'bynamodb'
-    filter_exp = GT('published_at', '2014-12-01').apply_and(
-        Contains('title', keyword).apply_or(Contains('content', keyword))
-    ) # published_at > '2014-12-01' and (keyword in title or keyword in content)
+    filter_exp = GT('published_at', '2014-12-01') & (
+        Contains('title', keyword) | Contains('content', keyword))
     
     # Scan all articles that match the filter expression
     articles = Article.scan(filter_exp)

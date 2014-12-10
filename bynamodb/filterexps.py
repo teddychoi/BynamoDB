@@ -15,11 +15,11 @@ class Operator(object):
     def _build_exp(self, attr_values):
         raise NotImplemented
 
-    def apply_and(self, operator):
+    def __and__(self, operator):
         """Compose the operator with another operator using `and`"""
         return AND(self, operator)
 
-    def apply_or(self, operator):
+    def __or__(self, operator):
         """Compose the operator with another operator using `or`"""
         return OR(self, operator)
 
