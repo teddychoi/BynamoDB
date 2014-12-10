@@ -194,10 +194,10 @@ class Model(object):
             kwargs['key'] = cls._encode_key(hash_key, range_key)
         raw_data = cls._get_connection().get_item(cls.get_table_name(),
                                                   **kwargs)
-        return cls.deserialize(raw_data['Item'])
+        return cls.from_raw_data(raw_data['Item'])
 
     @classmethod
-    def deserialize(cls, item_raw):
+    def from_raw_data(cls, item_raw):
         """Translate the raw item data from the DynamoDBConnection
         to the item object.
 

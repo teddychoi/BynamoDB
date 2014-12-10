@@ -7,7 +7,7 @@ class Result(object):
         self.model = model
         self.consumed_capacity = result_set.get('ConsumedCapacity')
         self.count = result_set.get('Count')
-        self.items = [model.deserialize(item)
+        self.items = [model.from_raw_data(item)
                       for item in result_set.get('Items')]
         self.last_evaluated_key = result_set.get('LastEvaluatedKey')
         self.scanned_count = result_set.get('ScannedCount')
