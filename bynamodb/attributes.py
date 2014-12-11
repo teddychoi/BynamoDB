@@ -40,7 +40,7 @@ class StringAttribute(Attribute):
     type = STRING
 
 
-class StingSetAttribute(Attribute):
+class StringSetAttribute(Attribute):
     type = STRING_SET
 
 
