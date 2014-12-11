@@ -40,7 +40,7 @@ class Model(object):
     _keys = None
     _indexes = None
 
-    def __init__(self, data):
+    def __init__(self, **data):
         """An object of the Model represents an item of the model.
 
         :param data: key value of the item.
@@ -113,7 +113,7 @@ class Model(object):
         :type data: :class:`collections.Mapping`
 
         """
-        cls._put_item(cls(data))
+        cls._put_item(cls(**data))
 
     @classmethod
     def _put_item(cls, item):
@@ -205,7 +205,7 @@ class Model(object):
         deserialized = {}
         for name, attr in item_raw.items():
             deserialized[name] = dynamizer.decode(attr)
-        return cls(deserialized)
+        return cls(**deserialized)
 
     @classmethod
     def _build_filter(cls, key_filter):

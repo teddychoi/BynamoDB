@@ -148,10 +148,10 @@ def test_put_item_with_missing_attr(fx_test_model):
 
 def test_save_item_with_missing_attr(fx_test_model):
     fx_test_model.create_table()
-    item = fx_test_model({
-        'hash_key_attr': 'hash_key',
-        'range_key_attr': 'range_key'
-    })
+    item = fx_test_model(
+        hash_key_attr='hash_key',
+        range_key_attr='range_key'
+    )
     with raises(NullAttributeException):
         item.save()
 
@@ -183,9 +183,9 @@ def fx_model_with_nullable_attr():
 def test_save_item_nullable_attr_emptied(fx_model_with_nullable_attr):
     fx_model_with_nullable_attr.create_table()
     hash_key_value = 'value'
-    fx_model_with_nullable_attr({
-        'hash_key': hash_key_value
-    }).save()
+    fx_model_with_nullable_attr(
+        hash_key=hash_key_value
+    ).save()
     item = fx_model_with_nullable_attr.get_item(hash_key_value)
     assert item.hash_key == hash_key_value
 
