@@ -117,7 +117,6 @@ class Model(object):
     @classmethod
     def _put_item(cls, item):
         data = {}
-        dynamizer = Dynamizer()
         for name, attr in cls._get_attributes().items():
             attr_value = getattr(item, name, None)
             if attr_value is None:
@@ -126,13 +125,10 @@ class Model(object):
                         'Attribute {0} cannot be null'.format(name))
                 else:
                     continue
-            if not attr.valid(attr_value):
-                raise ValueError(
-                    '{0} is not valid type for {1}'.format(
-                        attr_value, name
-                    ))
-            # Maybe it's able to replace the dynamizer.
-            data[attr.attr_name] = dynamizer.encode(attr_value)
+            value = attr.encode(attr_value)
+            if not value:
+                continue
+            data[attr.attr_name] = value
         cls._get_connection().put_item(cls.get_table_name(), data)
 
     @classmethod

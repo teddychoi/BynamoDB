@@ -39,6 +39,18 @@ class Attribute(object):
     def valid(cls, value):
         raise NotImplementedError
 
+    def encode(self, value):
+        if not self.valid(value):
+            raise ValueError(
+                '{0} is not valid for {1}. expected type: {2}'.format(
+                    value, self.attr_name, self.type
+                )
+            )
+        return self._encode(value)
+
+    def _encode(self, value):
+        return {self.type: value}
+
 
 class StringAttribute(Attribute):
     type = STRING
@@ -72,6 +84,10 @@ class SetAttribute(Attribute):
     def valid(cls, value):
         return (type(value) == set and
                 all(cls.set_of.valid(elem) for elem in value))
+
+    def _encode(self, value):
+        if len(value):
+            return {self.type: list(value)}
 
 
 class StringSetAttribute(SetAttribute):
