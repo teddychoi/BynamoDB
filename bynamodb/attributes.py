@@ -48,30 +48,12 @@ class StringAttribute(Attribute):
         return type(value) == str
 
 
-class StringSetAttribute(Attribute):
-    type = STRING_SET
-
-    @classmethod
-    def valid(cls, value):
-        return (type(value) == set and
-                all(StringAttribute.valid(elem) for elem in value))
-
-
 class BinaryAttribute(Attribute):
     type = BINARY
 
     @classmethod
     def valid(cls, value):
         return type(value) == str
-
-
-class BinarySetAttribute(Attribute):
-    type = BINARY_SET
-
-    @classmethod
-    def valid(cls, value):
-        return (type(value) == set and
-                all(BinaryAttribute.valid(elem) for elem in value))
 
 
 class NumberAttribute(Attribute):
@@ -82,10 +64,25 @@ class NumberAttribute(Attribute):
         return type(value) == int
 
 
-class NumberSetAttribute(Attribute):
-    type = NUMBER_SET
+class SetAttribute(Attribute):
+    set_of = None
 
     @classmethod
     def valid(cls, value):
         return (type(value) == set and
-                all(NumberAttribute.valid(elem) for elem in value))
+                all(cls.set_of.valid(elem) for elem in value))
+
+
+class StringSetAttribute(SetAttribute):
+    type = STRING_SET
+    set_of = StringAttribute
+
+
+class BinarySetAttribute(SetAttribute):
+    type = BINARY_SET
+    set_of = BinaryAttribute
+
+
+class NumberSetAttribute(SetAttribute):
+    type = NUMBER_SET
+    set_of = NumberAttribute
