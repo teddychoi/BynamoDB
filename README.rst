@@ -90,7 +90,7 @@ Complex lookups in Scan & Query
     
     keyword = 'bynamodb'
     filter_exp = GT('published_at', '2014-12-01') & (
-        Contains('title', keyword) | Contains('content', keyword))
+        Contains('title', keyword) | Contains('content', keyword.upper()))
     
     # Scan all articles that match the filter expression
     articles = Article.scan(filter_exp)
