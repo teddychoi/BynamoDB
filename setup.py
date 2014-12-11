@@ -2,6 +2,9 @@ from setuptools import find_packages, setup
 
 from bynamodb.version import VERSION
 
+
+install_requires = ['boto']
+
 setup(
     name='bynamodb',
     version=VERSION,
@@ -11,5 +14,6 @@ setup(
     license='MIT',
     description='High level DynamoDB API'
                 'wrapping boto.dynamodb2.layer1.DynamoDBConnection',
+    install_requires=install_requires,
     packages=find_packages(exclude=['tests'])
 )
