@@ -56,7 +56,7 @@ class Model(object):
 
     def _set_defaults(self):
         for attr in self._get_attributes().values():
-            if attr.default:
+            if attr.default is not None:
                 value = attr.default
                 if callable(value):
                     value = value()

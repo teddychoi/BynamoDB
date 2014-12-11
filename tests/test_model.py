@@ -1,7 +1,7 @@
 from _pytest.python import raises, fixture
 from boto.dynamodb2.layer1 import DynamoDBConnection
 
-from bynamodb.attributes import StringAttribute
+from bynamodb.attributes import StringAttribute, StringSetAttribute
 from bynamodb.exceptions import NullAttributeException
 from bynamodb.filterexps import GT
 from bynamodb.indexes import GlobalAllIndex, AllIndex
@@ -221,3 +221,18 @@ def test_scan_with_filter_operator(fx_query_test_model, fx_query_test_items):
 def test_query(fx_query_test_model, fx_query_test_items):
     items = list(fx_query_test_model.query(published_at__eq='aaaaa'))
     assert all(item.published_at == 'aaaaa' for item in items)
+
+
+def test_model_with_set_attr():
+    class TestModel(Model):
+        hash_key = StringAttribute(hash_key=True)
+        attr = StringSetAttribute(default=set())
+
+    TestModel.create_table()
+    TestModel.put_item(hash_key='1')
+    item = TestModel.get_item(hash_key='1')
+    assert item.attr == set()
+
+    TestModel.put_item(hash_key='2', attr={'1', '2'})
+    item = TestModel.get_item(hash_key='2')
+    assert item.attr == {'1', '2'}
