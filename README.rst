@@ -1,7 +1,7 @@
 BynamoDB
 ========
 
-High level DynamoDB API wrapping boto.dynamodb2.layer1.DynamoDBConnection
+High-Level DynamoDB Interface for Python wrapping Low-Level Interface of boto
 
 Patch DynamoDBConnection
 ========================

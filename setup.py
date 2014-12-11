@@ -12,8 +12,8 @@ setup(
     author='Bochul Choi',
     author_email='vio.bo94@gmail.com',
     license='MIT',
-    description='High level DynamoDB API'
-                'wrapping boto.dynamodb2.layer1.DynamoDBConnection',
+    description='High-Level DynamoDB Interface for Python'
+                'wrapping Low-Level Interface of boto',
     install_requires=install_requires,
     packages=find_packages(exclude=['tests'])
 )
