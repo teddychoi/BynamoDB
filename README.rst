@@ -48,6 +48,25 @@ Put Item & Get Item
     )
     article = Article.get_item(hash_key='2014-12-09', range_key='1')
 
+Get Item from Raw Data
+======================
+
+You can get items from raw data retrieved from `boto`'s low level API
+
+.. code-block:: python
+
+    from boto.dynamodb2.layer1 import DynamoDBConnection
+
+    conn = DynamoDBConnection()
+    raw_data = conn.get_item(
+        'Article',
+        {
+            'published_at': {'S': '2014-12-09'},
+            'id': {'S': '1'}
+        }
+    )
+    article = Article.from_raw_data(raw_data['Item'])
+
 Simple Scan & Query
 ===================
 .. code-block:: python
