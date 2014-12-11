@@ -18,7 +18,8 @@ Model Definition
 ================
 .. code-block:: python
 
-    from bynamodb.attributes import StringAttribute
+    import datetime
+    from bynamodb.attributes import StringAttribute, StringSetAttribute
     from bynamodb.indexes import GlobalAllIndex
     from bynamodb.model import Model
     
@@ -28,6 +29,10 @@ Model Definition
         title = StringAttribute()
         content = StringAttribute()
         author = StringAttribute()
+        write_time = StringAttribute(
+            default=lambda: str(datetime.datetime.now()))
+        tags = StringSetAttribute(default=set())
+        thumbnail = StringAttribute(null=True)
         
         class AuthorIndex(GlobalAllIndex):
             read_throughput = 5
