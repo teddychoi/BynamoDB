@@ -73,7 +73,7 @@ Complex lookups in Scan & Query
     
     # Query articles that match the filter expression and the author condition
     author = 'Bochul Choi'
-    articles = Atricle.query(author__eq: author, filter_builder=filter_exp,
+    articles = Atricle.query(author__eq=author, filter_builder=filter_exp,
                              index_name='AuthorIndex')
     
     
