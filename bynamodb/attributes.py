@@ -35,44 +35,57 @@ class Attribute(object):
             return
         raise ValueError('Cannot change the class attribute')
 
+    @classmethod
+    def valid(cls, value):
+        raise NotImplementedError
+
 
 class StringAttribute(Attribute):
     type = STRING
 
-    def valid(self, value):
+    @classmethod
+    def valid(cls, value):
         return type(value) == str
 
 
 class StringSetAttribute(Attribute):
     type = STRING_SET
 
-    def valid(self, value):
-        return type(value) == set and all(type(elem) == str for elem in value)
+    @classmethod
+    def valid(cls, value):
+        return (type(value) == set and
+                all(StringAttribute.valid(elem) for elem in value))
 
 
 class BinaryAttribute(Attribute):
     type = BINARY
 
-    def valid(self, value):
+    @classmethod
+    def valid(cls, value):
         return type(value) == str
 
 
 class BinarySetAttribute(Attribute):
     type = BINARY_SET
 
-    def valid(self, value):
-        return type(value) == set and all(type(elem) == str for elem in value)
+    @classmethod
+    def valid(cls, value):
+        return (type(value) == set and
+                all(BinaryAttribute.valid(elem) for elem in value))
 
 
 class NumberAttribute(Attribute):
     type = NUMBER
 
-    def valid(self, value):
+    @classmethod
+    def valid(cls, value):
         return type(value) == int
 
 
 class NumberSetAttribute(Attribute):
     type = NUMBER_SET
 
-    def valid(self, value):
-        return type(value) == set and all(type(elem) == int for elem in value)
+    @classmethod
+    def valid(cls, value):
+        return (type(value) == set and
+                all(NumberAttribute.valid(elem) for elem in value))
