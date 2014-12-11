@@ -10,6 +10,7 @@ def test_number_attribute_validation():
 
 def test_string_attribute_validation():
     assert StringAttribute.valid('1234')
+    assert StringAttribute.valid(u'1234')
     assert not StringAttribute.valid(1234)
 
 

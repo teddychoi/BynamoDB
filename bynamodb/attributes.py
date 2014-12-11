@@ -45,7 +45,8 @@ class StringAttribute(Attribute):
 
     @classmethod
     def valid(cls, value):
-        return type(value) == str
+        value_type = type(value)
+        return value_type == str or value_type == unicode
 
 
 class BinaryAttribute(Attribute):
