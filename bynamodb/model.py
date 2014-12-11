@@ -1,6 +1,5 @@
 from boto.dynamodb2.layer1 import DynamoDBConnection
 from boto.dynamodb2.fields import HashKey, RangeKey
-from boto.dynamodb.types import get_dynamodb_type
 from boto.dynamodb2.types import Dynamizer
 
 from .attributes import Attribute
@@ -126,11 +125,10 @@ class Model(object):
                         'Attribute {0} cannot be null'.format(name))
                 else:
                     continue
-            attr_value_type = get_dynamodb_type(attr_value)
-            if attr_value_type != attr.type:
+            if not attr.valid(attr_value):
                 raise ValueError(
-                    'Expected type for {0}: {1}, actual type: {2}'.format(
-                        name, attr, attr_value_type
+                    '{0} is not valid type for {1}'.format(
+                        attr_value, name
                     ))
             data[attr.attr_name] = attr_value
         cls._get_connection().put_item(cls.get_table_name(), data)

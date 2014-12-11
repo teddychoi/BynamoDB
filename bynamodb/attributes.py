@@ -39,22 +39,40 @@ class Attribute(object):
 class StringAttribute(Attribute):
     type = STRING
 
+    def valid(self, value):
+        return type(value) == str
+
 
 class StringSetAttribute(Attribute):
     type = STRING_SET
+
+    def valid(self, value):
+        return type(value) == set and all(type(elem) == str for elem in value)
 
 
 class BinaryAttribute(Attribute):
     type = BINARY
 
+    def valid(self, value):
+        return type(value) == str
+
 
 class BinarySetAttribute(Attribute):
     type = BINARY_SET
+
+    def valid(self, value):
+        return type(value) == set and all(type(elem) == str for elem in value)
 
 
 class NumberAttribute(Attribute):
     type = NUMBER
 
+    def valid(self, value):
+        return type(value) == int
+
 
 class NumberSetAttribute(Attribute):
     type = NUMBER_SET
+
+    def valid(self, value):
+        return type(value) == set and all(type(elem) == int for elem in value)
