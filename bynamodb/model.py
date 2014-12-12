@@ -65,6 +65,11 @@ class Model(object):
     def save(self):
         self._put_item(self)
 
+    def delete(self):
+        key_fields = [key.name for key in self._get_keys()]
+        key = dict((key, getattr(self, key)) for key in key_fields)
+        return self._get_connection().delete_item(self.get_table_name(), key)
+
     @classmethod
     def create_table(cls, read_throughput=5, write_throughput=5):
         """Create the table as the schema definition."""

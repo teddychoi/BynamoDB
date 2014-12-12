@@ -2,7 +2,7 @@ from _pytest.python import raises, fixture
 from boto.dynamodb2.layer1 import DynamoDBConnection
 
 from bynamodb.attributes import StringAttribute, StringSetAttribute
-from bynamodb.exceptions import NullAttributeException
+from bynamodb.exceptions import NullAttributeException, ItemNotFoundException
 from bynamodb.filterexps import GT
 from bynamodb.indexes import GlobalAllIndex, AllIndex
 from bynamodb.model import Model
@@ -99,7 +99,7 @@ def test_create_table_with_local_index(fx_table_with_local_index):
         assert expected_key_name[key['KeyType']] == key['AttributeName']
 
 
-def test_get_item(fx_test_model):
+def test_put_item_and_get_item(fx_test_model):
     fx_test_model.create_table()
 
     hash_key_value = 'Hash Key Value'
@@ -117,23 +117,22 @@ def test_get_item(fx_test_model):
     assert item.attr_1 == attr1_value
 
 
-def test_put_item(fx_test_model):
+def test_delete_item(fx_test_model):
     fx_test_model.create_table()
+
     hash_key_value = 'Hash Key Value'
     range_key_value = 'Range Key Value'
     attr1_value = 'Attribute1 Value'
-    attrs = {
-        'hash_key_attr': hash_key_value,
-        'range_key_attr': range_key_value,
-        'attr_1': attr1_value
-    }
-    fx_test_model.put_item(**attrs)
+    fx_test_model.put_item(
+        hash_key_attr=hash_key_value,
+        range_key_attr=range_key_value,
+        attr_1=attr1_value
+    )
 
-    item = fx_test_model.get_item(hash_key=hash_key_value,
-                                  range_key=range_key_value)
-    assert item.hash_key_attr == hash_key_value
-    assert item.range_key_attr == range_key_value
-    assert item.attr_1 == attr1_value
+    item = fx_test_model.get_item(hash_key_value, range_key_value)
+    item.delete()
+    with raises(ItemNotFoundException):
+        fx_test_model.get_item(hash_key_value, range_key_value)
 
 
 def test_put_item_with_missing_attr(fx_test_model):
