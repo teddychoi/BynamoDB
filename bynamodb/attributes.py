@@ -21,8 +21,11 @@ class Attribute(object):
                  null=False, default=None):
         self.hash_key = hash_key
         self.range_key = range_key
-        self.null = null
         self.default = default
+        if default is not None:
+            self.null = True
+        else:
+            self.null = null
 
     def __get__(self, obj, cls=None):
         if obj is not None:
