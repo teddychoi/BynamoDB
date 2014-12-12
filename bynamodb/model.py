@@ -124,16 +124,13 @@ class Model(object):
         data = {}
         for name, attr in cls._get_attributes().items():
             attr_value = getattr(item, name, None)
-            if attr_value is None:
+            if not attr_value:
                 if not attr.null:
                     raise NullAttributeException(
                         'Attribute {0} cannot be null'.format(name))
                 else:
                     continue
-            value = attr.encode(attr_value)
-            if not value:
-                continue
-            data[attr.attr_name] = value
+            data[attr.attr_name] = attr.encode(attr_value)
         cls._get_connection().put_item(cls.get_table_name(), data)
 
     @classmethod

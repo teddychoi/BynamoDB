@@ -89,8 +89,7 @@ class SetAttribute(Attribute):
                 all(cls.set_of.valid(elem) for elem in value))
 
     def _encode(self, value):
-        if len(value):
-            return {self.type: list(value)}
+        return {self.type: list(value)}
 
 
 class StringSetAttribute(SetAttribute):
