@@ -3,7 +3,7 @@ from boto.dynamodb2.fields import HashKey, RangeKey
 from boto.dynamodb2.types import Dynamizer
 
 from .attributes import Attribute
-from .exceptions import NullAttributeException
+from .exceptions import NullAttributeException, ItemNotFoundException
 from .indexes import Index, GlobalIndex
 
 
@@ -136,6 +136,8 @@ class Model(object):
         """ Get item from the table."""
         key = cls._encode_key(hash_key, range_key)
         raw_data = cls._get_connection().get_item(cls.get_table_name(), key)
+        if 'Item' not in raw_data:
+            raise ItemNotFoundException
         return cls.from_raw_data(raw_data['Item'])
 
     @classmethod
