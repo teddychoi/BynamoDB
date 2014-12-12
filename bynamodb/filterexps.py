@@ -83,8 +83,16 @@ class GT(ComparisonOperator):
     operator = '>'
 
 
+class GTE(ComparisonOperator):
+    operator = '>='
+
+
 class LT(ComparisonOperator):
     operator = '<'
+
+
+class LTE(ComparisonOperator):
+    operator = '<='
 
 
 class Contains(Operator):
