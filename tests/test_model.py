@@ -222,16 +222,26 @@ def test_query(fx_query_test_model, fx_query_test_items):
     assert all(item.published_at == 'aaaaa' for item in items)
 
 
-def test_model_with_set_attr():
+@fixture()
+def fx_model_with_set_attr():
     class TestModel(Model):
         hash_key = StringAttribute(hash_key=True)
         attr = StringSetAttribute(default=set())
-
     TestModel.create_table()
-    TestModel.put_item(hash_key='1')
-    item = TestModel.get_item(hash_key='1')
+    return TestModel
+
+
+def test_model_with_set_attr(fx_model_with_set_attr):
+    fx_model_with_set_attr.put_item(hash_key='1')
+    item = fx_model_with_set_attr.get_item(hash_key='1')
     assert item.attr == set()
 
-    TestModel.put_item(hash_key='2', attr={'1', '2'})
-    item = TestModel.get_item(hash_key='2')
+    fx_model_with_set_attr.put_item(hash_key='2', attr={'1', '2'})
+    item = fx_model_with_set_attr.get_item(hash_key='2')
     assert item.attr == {'1', '2'}
+
+
+def test_default_set_not_modified(fx_model_with_set_attr):
+    item = fx_model_with_set_attr(hash_key='hash_key')
+    item.attr.add('value')
+    assert fx_model_with_set_attr.attr.default == set()

@@ -1,3 +1,5 @@
+import copy
+
 from boto.dynamodb2.layer1 import DynamoDBConnection
 from boto.dynamodb2.fields import HashKey, RangeKey
 from boto.dynamodb2.types import Dynamizer
@@ -57,7 +59,7 @@ class Model(object):
     def _set_defaults(self):
         for attr in self._get_attributes().values():
             if attr.default is not None:
-                value = attr.default
+                value = copy.copy(attr.default)
                 if callable(value):
                     value = value()
                 setattr(self, attr.attr_name, value)
