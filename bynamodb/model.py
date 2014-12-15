@@ -5,6 +5,7 @@ from boto.dynamodb2.fields import HashKey, RangeKey
 from boto.dynamodb2.types import Dynamizer
 
 from .attributes import Attribute
+from .conditions import KEY_CONDITIONS, build_condition
 from .exceptions import NullAttributeException, ItemNotFoundException
 from .indexes import Index, GlobalIndex
 
@@ -154,7 +155,7 @@ class Model(object):
         :type filter_builder: :class:`~bynamodb.filterexps.Operator`
         """
         query_kwargs = {
-            'key_conditions': cls._build_filter(key_conditions),
+            'key_conditions': build_condition(key_conditions, KEY_CONDITIONS),
             'index_name': index_name
         }
         if filter_builder:
@@ -182,7 +183,7 @@ class Model(object):
         :type filter_builder: :class:`~bynamodb.filterexps.Operator`
 
         """
-        scan_kwargs = {'scan_filter': cls._build_filter(scan_filter)}
+        scan_kwargs = {'scan_filter': build_condition(scan_filter)}
         if filter_builder:
             cls._build_filter_expression(filter_builder, scan_kwargs)
         while True:
@@ -208,24 +209,6 @@ class Model(object):
         for name, attr in item_raw.items():
             deserialized[name] = dynamizer.decode(attr)
         return cls(**deserialized)
-
-    @classmethod
-    def _build_filter(cls, key_filter):
-        if not key_filter:
-            return None
-        filters = {}
-        dynamizer = Dynamizer()
-        for field_and_op, value in key_filter.items():
-            try:
-                field, op = field_and_op.split('__')
-            except Exception:
-                raise ValueError('key filter expression is not valid')
-            # TODO: Implement multiple value encoding
-            filters[field] = {
-                'ComparisonOperator': op.upper(),
-                'AttributeValueList': [dynamizer.encode(value)]
-            }
-        return filters
 
     @classmethod
     def _build_filter_expression(cls, filter_builder, kwargs):
