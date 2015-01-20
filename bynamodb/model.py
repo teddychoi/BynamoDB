@@ -204,10 +204,9 @@ class Model(object):
         to the item object.
 
         """
-        dynamizer = Dynamizer()
         deserialized = {}
         for name, attr in item_raw.items():
-            deserialized[name] = dynamizer.decode(attr)
+            deserialized[name] = getattr(cls, name).decode(attr)
         return cls(**deserialized)
 
     @classmethod
