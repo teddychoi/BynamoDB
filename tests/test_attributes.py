@@ -4,7 +4,7 @@ from bynamodb.attributes import (NumberAttribute, StringAttribute,
 
 def test_number_attribute_validation():
     assert NumberAttribute.valid(123)
-    assert not NumberAttribute.valid(123.4)
+    assert NumberAttribute.valid(123.4)
     assert not NumberAttribute.valid('1234')
 
 
