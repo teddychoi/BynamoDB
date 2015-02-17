@@ -8,6 +8,7 @@ from .attributes import Attribute
 from .conditions import KEY_CONDITIONS, build_condition
 from .exceptions import NullAttributeException, ItemNotFoundException
 from .indexes import Index, GlobalIndex
+from .results import ResultSet
 
 
 class ModelMeta(type):
@@ -160,20 +161,7 @@ class Model(object):
         }
         if filter_builder:
             cls._build_filter_expression(filter_builder, query_kwargs)
-
-        while True:
-            result = cls._get_connection().query(
-                cls.get_table_name(),
-                **query_kwargs
-            )
-            for raw_item in result.get('Items'):
-                yield cls.from_raw_data(raw_item)
-
-            last_evaluated_key = cls._get_last_key(result)
-            if last_evaluated_key:
-                query_kwargs['exclusive_start_key'] = last_evaluated_key
-            else:
-                raise StopIteration
+        return ResultSet(cls, 'query', query_kwargs)
 
     @classmethod
     def scan(cls, filter_builder=None, **scan_filter):
@@ -186,17 +174,7 @@ class Model(object):
         scan_kwargs = {'scan_filter': build_condition(scan_filter)}
         if filter_builder:
             cls._build_filter_expression(filter_builder, scan_kwargs)
-        while True:
-            result = cls._get_connection().scan(cls.get_table_name(),
-                                                **scan_kwargs)
-            for raw_item in result.get('Items'):
-                yield cls.from_raw_data(raw_item)
-
-            last_evaluated_key = cls._get_last_key(result)
-            if last_evaluated_key:
-                scan_kwargs['exclusive_start_key'] = last_evaluated_key
-            else:
-                raise StopIteration
+        return ResultSet(cls, 'scan', scan_kwargs)
 
     @classmethod
     def from_raw_data(cls, item_raw):
@@ -213,17 +191,6 @@ class Model(object):
     def _build_filter_expression(cls, filter_builder, kwargs):
         kwargs['filter_expression'], kwargs['expression_attribute_values'] = \
             filter_builder.build_exp()
-
-    @classmethod
-    def _get_last_key(cls, result):
-        last_evaluated_key = result.get('LastEvaluatedKey')
-        if not last_evaluated_key:
-            return None
-        last_key = {}
-        dynamizer = Dynamizer()
-        for key, value in last_evaluated_key.items():
-            last_key[key] = dynamizer.decode(value)
-        return last_key
 
     @classmethod
     def _encode_key(cls, hash_key, range_key=None):

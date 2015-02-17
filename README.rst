@@ -78,9 +78,16 @@ Simple Scan & Query
 
     # Scan all articles that the title starts with "Title"
     articles = Article.scan(title__startswith='Title')
+    # Get the total count of matching items
+    count = articles.count()
+    # Get the iterator of matching items
+    items = iter(articles)
 
     # Query articles that author is "Bochul Choi"
     articles = Article.query(author__eq='Bochul Choi', index_name='AuthorIndex')
+    # The query result also provide the count method and iterator
+    count = articles.count()
+    items = iter(articles)
 
 Complex lookups in Scan & Query
 ===============================

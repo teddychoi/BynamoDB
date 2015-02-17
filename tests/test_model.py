@@ -206,21 +206,24 @@ def fx_query_test_items(fx_query_test_model):
 
 
 def test_scan(fx_query_test_model, fx_query_test_items):
-    items = list(fx_query_test_model.scan())
-    assert len(items) == 6
+    result = fx_query_test_model.scan()
+    items = list(result)
+    assert result.count() == 6
     assert all(type(item) == fx_query_test_model for item in items)
 
 
 def test_scan_with_filter_operator(fx_query_test_model, fx_query_test_items):
     gt = GT('published_at', 'bbbbb')
-    items = list(fx_query_test_model.scan(filter_builder=gt))
-    assert len(items) == 3
+    result = fx_query_test_model.scan(filter_builder=gt)
+    items = list(result)
+    assert result.count() == 3
     assert all([item.published_at > 'bbbbb' for item in items])
 
 
 def test_query(fx_query_test_model, fx_query_test_items):
-    items = list(fx_query_test_model.query(published_at__eq='aaaaa'))
-    assert all(item.published_at == 'aaaaa' for item in items)
+    result = fx_query_test_model.query(published_at__eq='aaaaa')
+    assert result.count() == 2
+    assert all(item.published_at == 'aaaaa' for item in result)
 
 
 @fixture
