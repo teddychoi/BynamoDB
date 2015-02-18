@@ -65,8 +65,7 @@ class StringAttribute(Attribute):
 
     @classmethod
     def valid(cls, value):
-        value_type = type(value)
-        return value_type == str or value_type == unicode
+        return type(value) in (str, unicode)
 
 
 class BinaryAttribute(Attribute):
@@ -74,7 +73,7 @@ class BinaryAttribute(Attribute):
 
     @classmethod
     def valid(cls, value):
-        return type(value) == str
+        return type(value) is str
 
 
 class NumberAttribute(Attribute):
@@ -82,7 +81,7 @@ class NumberAttribute(Attribute):
 
     @classmethod
     def valid(cls, value):
-        return type(value) in [int, float]
+        return type(value) in (int, float)
 
     def decode(self, value):
         value = Dynamizer().decode(value)
@@ -100,7 +99,7 @@ class SetAttribute(Attribute):
 
     @classmethod
     def valid(cls, value):
-        return (type(value) == set and
+        return (type(value) is set and
                 all(cls.set_of.valid(elem) for elem in value))
 
     def _encode(self, value):
