@@ -60,28 +60,29 @@ class Attribute(object):
         return Dynamizer().decode(value)
 
 
-class StringAttribute(Attribute):
+class ScalarAttribute(Attribute):
+
+    # (:class:`tuple`) Acceptable types for the value used in encoding
+    accepts = None
+
+    @classmethod
+    def valid(cls, value):
+        return type(value) in cls.accepts
+
+
+class StringAttribute(ScalarAttribute):
     type = STRING
-
-    @classmethod
-    def valid(cls, value):
-        return type(value) in (str, unicode)
+    accepts = (str, unicode)
 
 
-class BinaryAttribute(Attribute):
+class BinaryAttribute(ScalarAttribute):
     type = BINARY
-
-    @classmethod
-    def valid(cls, value):
-        return type(value) is str
+    accepts = str,
 
 
-class NumberAttribute(Attribute):
+class NumberAttribute(ScalarAttribute):
     type = NUMBER
-
-    @classmethod
-    def valid(cls, value):
-        return type(value) in (int, float)
+    accepts = int, float,
 
     def decode(self, value):
         value = Dynamizer().decode(value)
