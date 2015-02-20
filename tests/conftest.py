@@ -4,7 +4,7 @@ import subprocess
 
 from boto.dynamodb2.layer1 import DynamoDBConnection
 
-from bynamodb import patch_dynamodb_connection
+from bynamodb.patcher import patch_dynamodb_connection
 
 
 process = None
