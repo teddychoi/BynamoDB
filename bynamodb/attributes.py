@@ -53,7 +53,7 @@ class Attribute(object):
         raise NotImplementedError
 
     def _encode(self, value):
-        return {self.type: value}
+        return Dynamizer().encode(value)
 
     def decode(self, value):
         return Dynamizer().decode(value)
@@ -121,10 +121,6 @@ class SetAttribute(Attribute):
             'The type of value must be a set of a type in {2}'.format(
                 value, self.attr_name, self.set_of.accepts
             ))
-
-
-    def _encode(self, value):
-        return {self.type: list(value)}
 
 
 class StringSetAttribute(SetAttribute):
