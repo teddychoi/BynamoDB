@@ -239,6 +239,26 @@ def test_batch_get(fx_query_test_model, fx_batch_get_test_items):
     assert len(items) == 200
 
 
+def test_batch_write(fx_query_test_model):
+
+    with fx_query_test_model.batch_write() as batch:
+        for i in range(200):
+            batch.put_item(published_at=str(i), title=str(i))
+    assert fx_query_test_model.scan().count() == 200
+
+    with fx_query_test_model.batch_write() as batch:
+        for i in range(10):
+            batch.delete_item(str(i), str(i))
+
+        for i in range(200, 300):
+            batch.put_item(published_at=str(i), title=str(i))
+    assert fx_query_test_model.scan().count() == 290
+
+    with raises(NullAttributeException):
+        with fx_query_test_model.batch_write() as batch:
+            batch.put_item(published_at=500)
+
+
 @fixture
 def fx_model_with_set_attr():
     class TestModel(Model):

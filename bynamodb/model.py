@@ -66,6 +66,16 @@ class Model(object):
                     value = value()
                 setattr(self, attr.attr_name, value)
 
+    def validate(self):
+        for name, attr in self._get_attributes().items():
+            attr_value = getattr(self, name, None)
+            if not attr_value:
+                if not attr.null:
+                    raise NullAttributeException(
+                        'Attribute {0} cannot be null'.format(name))
+                else:
+                    continue
+
     def save(self):
         self._put_item(self)
 
@@ -125,15 +135,12 @@ class Model(object):
 
     @classmethod
     def _put_item(cls, item):
+        item.validate()
         data = {}
         for name, attr in cls._get_attributes().items():
             attr_value = getattr(item, name, None)
             if not attr_value:
-                if not attr.null:
-                    raise NullAttributeException(
-                        'Attribute {0} cannot be null'.format(name))
-                else:
-                    continue
+                continue
             data[attr.attr_name] = attr.encode(attr_value)
         cls._get_connection().put_item(cls.get_table_name(), data)
 
@@ -196,6 +203,9 @@ class Model(object):
                 unprocessed.insert(i, key)
         raise StopIteration
 
+    @classmethod
+    def batch_write(cls):
+        return BatchWrite(cls)
 
     @classmethod
     def from_raw_data(cls, item_raw):
@@ -276,3 +286,52 @@ class Model(object):
             return cls._conn
         cls._conn = DynamoDBConnection()
         return cls._conn
+
+
+class BatchWrite(object):
+
+    def __init__(self, model):
+        self.model = model
+        self.to_put = []
+        self.to_delete = []
+
+    def put_item(self, **data):
+        self.model(**data).validate()
+        self.to_put.append(
+            {
+                'PutRequest': {
+                    'Item': data
+                }
+            }
+        )
+
+    def delete_item(self, *keys):
+        key = self.model._encode_key(*keys)
+        self.to_delete.append(
+            {
+                'DeleteRequest': {
+                    'Key': key
+                }
+            }
+        )
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.send_request()
+
+    def send_request(self):
+        unprocessed = []
+        unprocessed.extend(self.to_put)
+        unprocessed.extend(self.to_delete)
+        while unprocessed:
+            nexts = unprocessed[:25]
+            unprocessed = unprocessed[25:]
+            batch_request = {
+                self.model.get_table_name(): nexts
+            }
+            result = (self.model.
+                      _get_connection().batch_write_item(batch_request))
+            unprocessed.extend(result.get('UnprocessedItems', {}).
+                               get(self.model.get_table_name(), []))
