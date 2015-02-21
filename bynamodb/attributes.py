@@ -87,18 +87,21 @@ class BinaryAttribute(ScalarAttribute):
 
 
 class NumberAttribute(ScalarAttribute):
-    type = NUMBER
+
+    # As DynamoDB has limit on number precision, it encodes the value to string
+    # and decodes to number.
+    type = STRING
     accepts = int, float,
+
+    def _encode(self, value):
+        return Dynamizer().encode(str(value))
 
     def decode(self, value):
         value = Dynamizer().decode(value)
-        if isinstance(value, Decimal):
-            s = str(value)
-            if '.' in s:
-                return float(s)
-            else:
-                return int(s)
-        return value
+        if '.' in value:
+            return float(value)
+        else:
+            return int(value)
 
 
 class SetAttribute(Attribute):
