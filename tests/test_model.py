@@ -2,7 +2,8 @@ from _pytest.python import raises, fixture
 from boto.dynamodb2.layer1 import DynamoDBConnection
 
 from bynamodb.attributes import (NumberAttribute, StringAttribute,
-                                 StringSetAttribute)
+                                 StringSetAttribute, ListAttribute,
+                                 MapAttribute)
 from bynamodb.exceptions import NullAttributeException, ItemNotFoundException
 from bynamodb.filterexps import GT
 from bynamodb.indexes import GlobalAllIndex, AllIndex
@@ -275,3 +276,23 @@ def test_model_with_number_attr(fx_model_with_number_attr):
 def test_scalar_attribute_invalidate(fx_model_with_number_attr):
     with raises(ValueError):
         fx_model_with_number_attr.put_item(hash_key='hash', attr='12.34')
+
+
+@fixture
+def fx_model_with_document_attr():
+    class TestModel(Model):
+        hash_key = StringAttribute(hash_key=True)
+        list_attr = ListAttribute(default=[])
+        map_attr = MapAttribute(default={})
+    TestModel.create_table()
+    return TestModel
+
+
+def test_model_with_document_attr(fx_model_with_document_attr):
+    fx_model_with_document_attr.put_item(
+        hash_key='1',
+        list_attr=[1, 2],
+        map_attr={'a': 'b'})
+    item = fx_model_with_document_attr.get_item('1')
+    assert item.list_attr == [1, 2]
+    assert item.map_attr == {'a': 'b'}

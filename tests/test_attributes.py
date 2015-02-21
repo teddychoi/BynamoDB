@@ -1,5 +1,6 @@
 from bynamodb.attributes import (NumberAttribute, StringAttribute,
-                                 NumberSetAttribute, StringSetAttribute)
+                                 NumberSetAttribute, StringSetAttribute,
+                                 ListAttribute, MapAttribute)
 
 
 def test_number_attribute_validation():
@@ -27,3 +28,14 @@ def test_set_attributes_valid_with_expected_types():
 def test_set_attributes_not_valid_for_unexpected_types():
     assert not StringSetAttribute.valid({1, 2})
     assert not NumberSetAttribute.valid({'a', 'b'})
+
+
+def test_list_attribute_validation():
+    assert ListAttribute.valid([])
+    assert ListAttribute.valid([1, 2])
+    assert ListAttribute.valid([1, '2'])
+
+
+def test_map_attribute_validation():
+    assert MapAttribute.valid({})
+    assert MapAttribute.valid({'1': 2})

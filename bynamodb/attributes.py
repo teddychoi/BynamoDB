@@ -1,7 +1,7 @@
 from decimal import Decimal
 from boto.dynamodb.types import Dynamizer
 from boto.dynamodb2.types import (STRING, STRING_SET, BINARY, BINARY_SET,
-                                  NUMBER, NUMBER_SET)
+                                  NUMBER_SET, LIST, MAP, BOOLEAN)
 
 
 class Attribute(object):
@@ -102,6 +102,25 @@ class NumberAttribute(ScalarAttribute):
             return float(value)
         else:
             return int(value)
+
+
+class BooleanAttribute(ScalarAttribute):
+    type = BOOLEAN
+    accepts = bool,
+
+
+class DocumentAttribute(ScalarAttribute):
+    pass
+
+
+class ListAttribute(DocumentAttribute):
+    type = LIST
+    accepts = list,
+
+
+class MapAttribute(DocumentAttribute):
+    type = MAP
+    accepts = dict,
 
 
 class SetAttribute(Attribute):
