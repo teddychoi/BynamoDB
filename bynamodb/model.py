@@ -177,6 +177,27 @@ class Model(object):
         return ResultSet(cls, 'scan', scan_kwargs)
 
     @classmethod
+    def batch_get(cls, *args):
+        unprocessed = [cls._encode_key(*key) for key in args]
+        while unprocessed:
+            nexts = unprocessed[:100]
+            unprocessed = unprocessed[100:]
+            request_items = {
+                cls.get_table_name():
+                {
+                    'Keys': nexts
+                }
+            }
+            result = cls._get_connection().batch_get_item(request_items)
+            for item in result['Responses'].get(cls.get_table_name()):
+                yield cls.from_raw_data(item)
+            for i, key in enumerate(
+                    result.get('UnprocessedKeys', {}).get('Keys', [])):
+                unprocessed.insert(i, key)
+        raise StopIteration
+
+
+    @classmethod
     def from_raw_data(cls, item_raw):
         """Translate the raw item data from the DynamoDBConnection
         to the item object.

@@ -228,6 +228,18 @@ def test_query(fx_query_test_model, fx_query_test_items):
 
 
 @fixture
+def fx_batch_get_test_items(fx_query_test_model):
+    for i in range(200):
+        fx_query_test_model.put_item(published_at=str(i), title=str(i))
+
+
+def test_batch_get(fx_query_test_model, fx_batch_get_test_items):
+    keys = [(str(i), str(i)) for i in range(200)]
+    items = list(fx_query_test_model.batch_get(*keys))
+    assert len(items) == 200
+
+
+@fixture
 def fx_model_with_set_attr():
     class TestModel(Model):
         hash_key = StringAttribute(hash_key=True)
