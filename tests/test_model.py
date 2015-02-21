@@ -269,7 +269,7 @@ def fx_model_with_number_attr():
 def test_model_with_number_attr(fx_model_with_number_attr):
     fx_model_with_number_attr.put_item(hash_key='hash', attr=12.34)
     item = fx_model_with_number_attr.get_item('hash')
-    assert type(item.attr) == float
+    assert item.attr == 12.34
     item.save()
 
 
