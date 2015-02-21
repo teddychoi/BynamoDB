@@ -46,12 +46,11 @@ class Attribute(object):
 
     def encode(self, value):
         if not self.valid(value):
-            raise ValueError(
-                '{0} is not valid for {1}. expected type: {2}'.format(
-                    value, self.attr_name, self.type
-                )
-            )
+            raise ValueError(self.get_invalidation_message(value))
         return self._encode(value)
+
+    def get_invalidation_message(self, value):
+        raise NotImplementedError
 
     def _encode(self, value):
         return {self.type: value}
@@ -68,6 +67,13 @@ class ScalarAttribute(Attribute):
     @classmethod
     def valid(cls, value):
         return type(value) in cls.accepts
+
+    def get_invalidation_message(self, value):
+        return (
+            '{0} is not valid for {1}.'
+            'The type of value must be in {2}'.format(
+                value, self.attr_name, self.accepts
+            ))
 
 
 class StringAttribute(ScalarAttribute):
@@ -96,12 +102,23 @@ class NumberAttribute(ScalarAttribute):
 
 
 class SetAttribute(Attribute):
+
+    # (:class:`~bynamodb.attributes.ScalarAttribute`)
+    # The type of the elements.
     set_of = None
 
     @classmethod
     def valid(cls, value):
         return (type(value) is set and
                 all(cls.set_of.valid(elem) for elem in value))
+
+    def get_invalidation_message(self, value):
+        return (
+            '{0} is not valid for {1}.'
+            'The type of value must be a set of a type in {2}'.format(
+                value, self.attr_name, self.set_of.accepts
+            ))
+
 
     def _encode(self, value):
         return {self.type: list(value)}

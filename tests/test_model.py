@@ -251,6 +251,11 @@ def test_default_set_not_modified(fx_model_with_set_attr):
     assert fx_model_with_set_attr.attr.default == set()
 
 
+def test_set_attribute_invalidate(fx_model_with_set_attr):
+    with raises(ValueError):
+        fx_model_with_set_attr.put_item(hash_key='2', attr={1, 2})
+
+
 @fixture
 def fx_model_with_number_attr():
     class TestModel(Model):
@@ -265,3 +270,8 @@ def test_model_with_number_attr(fx_model_with_number_attr):
     item = fx_model_with_number_attr.get_item('hash')
     assert type(item.attr) == float
     item.save()
+
+
+def test_scalar_attribute_invalidate(fx_model_with_number_attr):
+    with raises(ValueError):
+        fx_model_with_number_attr.put_item(hash_key='hash', attr='12.34')
