@@ -299,10 +299,9 @@ def fx_model_with_number_attr():
 
 
 def test_model_with_number_attr(fx_model_with_number_attr):
-    fx_model_with_number_attr.put_item(hash_key='hash', attr=12.34)
+    fx_model_with_number_attr.put_item(hash_key='hash', attr=1234)
     item = fx_model_with_number_attr.get_item('hash')
-    assert item.attr == 12.34
-    item.save()
+    assert item.attr == 1234
 
 
 def test_scalar_attribute_invalidate(fx_model_with_number_attr):
