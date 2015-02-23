@@ -3,6 +3,13 @@ from boto.dynamodb2.layer1 import DynamoDBConnection
 from .model import Model
 
 
+def patch_from_config(config):
+    if 'DYNAMODB_CONNECTION' in config:
+        patch_dynamodb_connection(**config['DYNAMODB_CONNECTION'])
+    if 'DYNAMODB_PREFIX' in config:
+        patch_table_name_prefix(config['DYNAMODB_PREFIX'])
+
+
 def patch_dynamodb_connection(**kwargs):
     """:class:`boto.dynamodb2.layer1.DynamoDBConnection` patcher.
 
