@@ -10,7 +10,7 @@ Set DynamoDBConnection default host and port.
 
 .. code-block:: python
 
-    from bynamodb import patch_dynamodb_connection
+    from bynamodb.patcher import patch_dynamodb_connection
 
     patch_dynamodb_connection(host='localhost', port=8000)
 
@@ -106,5 +106,29 @@ Complex lookups in Scan & Query
     author = 'Bochul Choi'
     articles = Atricle.query(author__eq=author, filter_builder=filter_exp,
                              index_name='AuthorIndex')
-    
-    
+
+
+Batch Writing & Batch reading
+=============================
+.. code-block:: python
+
+    with Article.batch_write() with batch:
+        batch.put_item({
+            'published_at': '2015-02-23'
+            'id': '1',
+            title='Article 1',
+            content='This is the content',
+            author='Bochul Choi'
+        })
+        batch.put_item({
+            'published_at': '2015-02-23'
+            'id': '2'
+            title='Article 2',
+            content='This is the content',
+            author='Bochul Choi'
+        })
+
+    articles = Article.batch_get(
+        ('2015-02-23', '1'),
+        ('2015-02-23', '2'),
+    )
