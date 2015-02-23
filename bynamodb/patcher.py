@@ -1,5 +1,7 @@
 from boto.dynamodb2.layer1 import DynamoDBConnection
 
+from .model import Model
+
 
 def patch_dynamodb_connection(**kwargs):
     """:class:`boto.dynamodb2.layer1.DynamoDBConnection` patcher.
@@ -21,3 +23,9 @@ def patch_dynamodb_connection(**kwargs):
         self.__original_init__(**fkwargs)
 
     DynamoDBConnection.__init__ = init
+
+
+def patch_table_name_prefix(prefix):
+    """Patch the table name prefix"""
+
+    Model._table_prefix = prefix

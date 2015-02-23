@@ -7,7 +7,30 @@ from bynamodb.attributes import (NumberAttribute, StringAttribute,
 from bynamodb.exceptions import NullAttributeException, ItemNotFoundException
 from bynamodb.filterexps import GT
 from bynamodb.indexes import GlobalAllIndex, AllIndex
+from bynamodb.patcher import patch_table_name_prefix
 from bynamodb.model import Model
+
+
+@fixture
+def fx_set_table_prefix(request):
+    patch_table_name_prefix('Prefix')
+
+    def fin():
+        patch_table_name_prefix('')
+
+    request.addfinalizer(fin)
+
+
+def test_table_name_prefix(fx_set_table_prefix):
+    class TestModelWithoutName(Model):
+        pass
+
+    class TestModelWithName(Model):
+        table_name = 'TestModel'
+
+    assert TestModelWithoutName.get_table_name() == \
+        'PrefixTestModelWithoutName'
+    assert TestModelWithName.get_table_name() == 'TestModel'
 
 
 @fixture

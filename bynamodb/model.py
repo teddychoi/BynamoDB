@@ -38,6 +38,12 @@ class Model(object):
     #: # If omitted, the Model class name will be the table name.
     table_name = None
 
+    #: (:class:`str`) The prefix of table name.
+    #: If not empty string and the model does not have defined table name,
+    #: the table name would consists of the prefix and the class name
+    #: of the model.
+    _table_prefix = ''
+
     _attributes = None
     _conn = None
     _keys = None
@@ -234,7 +240,7 @@ class Model(object):
 
     @classmethod
     def get_table_name(cls):
-        return cls.table_name or cls.__name__
+        return cls.table_name or '%s%s' % (cls._table_prefix, cls.__name__)
 
     @classmethod
     def _get_keys(cls):
