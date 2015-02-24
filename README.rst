@@ -3,6 +3,17 @@ BynamoDB
 
 High-Level DynamoDB Interface for Python wrapping Low-Level Interface of boto
 
+Installation
+============
+
+From PyPi::
+
+    $ pip install bynamodb
+
+From GitHub::
+
+    $ pip install git+https://github.com/teddychoi/BynamoDB#egg=bynamodb
+
 Patch DynamoDBConnection
 ========================
 
