@@ -148,5 +148,7 @@ Batch Writing & Batch reading
 
 ChangeLogs
 ==========
-0.1.0
+0.1.2
+    - `Model.put_item` returns created item.
+0.1.1
     - `NumberAttribute` is only saved as number in db.
