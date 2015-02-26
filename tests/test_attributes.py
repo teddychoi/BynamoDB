@@ -9,13 +9,6 @@ def test_number_attribute_validation():
     assert not NumberAttribute.valid('1234')
 
 
-def test_number_attribute_saving_type():
-    as_string = NumberAttribute(as_string=True)
-    assert as_string.encode(1) == {'S': '1'}
-    as_number = NumberAttribute(as_string=False)
-    assert as_number.encode(1) == {'N': '1'}
-
-
 def test_string_attribute_validation():
     assert StringAttribute.valid('1234')
     assert StringAttribute.valid(u'1234')

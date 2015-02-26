@@ -144,3 +144,9 @@ Batch Writing & Batch reading
         ('2015-02-23', '1'),
         ('2015-02-23', '2'),
     )
+
+
+ChangeLogs
+==========
+0.1.0
+    - `NumberAttribute` is only saved as number in db.

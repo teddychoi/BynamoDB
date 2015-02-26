@@ -1,6 +1,6 @@
 from boto.dynamodb.types import Dynamizer
 from boto.dynamodb2.types import (STRING, STRING_SET, BINARY, BINARY_SET,
-                                  NUMBER_SET, LIST, MAP, BOOLEAN)
+                                  NUMBER_SET, LIST, MAP, BOOLEAN, NUMBER)
 
 
 class Attribute(object):
@@ -86,25 +86,10 @@ class BinaryAttribute(ScalarAttribute):
 
 
 class NumberAttribute(ScalarAttribute):
-    type = STRING
+    type = NUMBER
     accepts = int, float,
 
-    # # (:class:`bool`) If set, it encodes the value to string
-    # and decodes to number.
-    # This is for saving numbers over the number precision of DynamoDB,
-    # which is 38 digits.
-    as_string = False
-
-    def __init__(self, hash_key=False, range_key=False,
-                 null=False, default=None, as_string=False):
-        super(NumberAttribute, self).__init__(hash_key, range_key,
-                                              null, default)
-
-        self.as_string = as_string
-
     def _encode(self, value):
-        if self.as_string:
-            value = str(value)
         return Dynamizer().encode(value)
 
     def decode(self, value):
