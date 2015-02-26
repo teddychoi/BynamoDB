@@ -137,7 +137,7 @@ class Model(object):
         :type data: :class:`collections.Mapping`
 
         """
-        cls._put_item(cls(**data))
+        return cls._put_item(cls(**data))
 
     @classmethod
     def _put_item(cls, item):
@@ -149,6 +149,7 @@ class Model(object):
                 continue
             data[attr.attr_name] = attr.encode(attr_value)
         cls._get_connection().put_item(cls.get_table_name(), data)
+        return item
 
     @classmethod
     def get_item(cls, hash_key, range_key=None):
