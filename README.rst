@@ -120,24 +120,24 @@ Complex lookups in Scan & Query
                              index_name='AuthorIndex')
 
 
-Batch Writing & Batch reading
+Batch Writing & Batch Reading
 =============================
 .. code-block:: python
 
-    with Article.batch_write() with batch:
+    with Article.batch_write() as batch:
         batch.put_item({
-            'published_at': '2015-02-23'
+            'published_at': '2015-02-23',
             'id': '1',
-            title='Article 1',
-            content='This is the content',
-            author='Bochul Choi'
+            'title': 'Article 1',
+            'content': 'This is the content',
+            'author': 'Bochul Choi'
         })
         batch.put_item({
-            'published_at': '2015-02-23'
-            'id': '2'
-            title='Article 2',
-            content='This is the content',
-            author='Bochul Choi'
+            'published_at': '2015-02-23',
+            'id': '2',
+            'title': 'Article 2',
+            'content': 'This is the content',
+            'author': 'Bochul Choi'
         })
 
     articles = Article.batch_get(
@@ -146,8 +146,8 @@ Batch Writing & Batch reading
     )
 
 
-ChangeLogs
-==========
+Changelog
+=========
 0.1.2
     - `Model.put_item` returns created item.
 0.1.1
