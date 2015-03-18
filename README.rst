@@ -148,6 +148,8 @@ Batch Writing & Batch Reading
 
 Changelog
 =========
+0.1.3
+    - `Model.delete` needs to use encoded key.
 0.1.2
     - `Model.put_item` returns created item.
 0.1.1
