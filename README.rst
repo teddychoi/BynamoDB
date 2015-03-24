@@ -148,6 +148,8 @@ Batch Writing & Batch Reading
 
 Changelog
 =========
+0.1.4
+    - Set `ExclusiveStartKey` as the untransformed `LastEvaluatedKey`
 0.1.3
     - `Model.delete` needs to use encoded key.
 0.1.2
