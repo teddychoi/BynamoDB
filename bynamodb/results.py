@@ -1,6 +1,3 @@
-from boto.dynamodb.types import Dynamizer
-
-
 class ResultSet(object):
     """Result of the scan & query operation of the model."""
 
@@ -18,7 +15,7 @@ class ResultSet(object):
             for raw_item in result.get('Items'):
                 yield self.model.from_raw_data(raw_item)
 
-            last_evaluated_key = self._get_last_key(result)
+            last_evaluated_key = result.get('LastEvaluatedKey', None)
             if last_evaluated_key:
                 kwargs['exclusive_start_key'] = last_evaluated_key
             else:
@@ -38,7 +35,7 @@ class ResultSet(object):
             result = operation(self.model.get_table_name(), **kwargs)
             count += result['Count']
 
-            last_evaluated_key = self._get_last_key(result)
+            last_evaluated_key = result.get('LastEvaluatedKey', None)
             if last_evaluated_key:
                 kwargs['exclusive_start_key'] = last_evaluated_key
             else:
@@ -47,13 +44,3 @@ class ResultSet(object):
 
     def _get_operation(self):
         return getattr(self.model._get_connection(), self.operation)
-
-    def _get_last_key(self, result):
-        last_evaluated_key = result.get('LastEvaluatedKey')
-        if not last_evaluated_key:
-            return None
-        last_key = {}
-        dynamizer = Dynamizer()
-        for key, value in last_evaluated_key.items():
-            last_key[key] = dynamizer.decode(value)
-        return last_key
