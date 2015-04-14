@@ -247,7 +247,16 @@ def test_scan_with_filter_operator(fx_query_test_model, fx_query_test_items):
 def test_query(fx_query_test_model, fx_query_test_items):
     result = fx_query_test_model.query(published_at__eq='aaaaa')
     assert result.count() == 2
-    assert all(item.published_at == 'aaaaa' for item in result)
+    items = list(result)
+    assert all(item.published_at == 'aaaaa' for item in items)
+    assert [item.title for item in items] == ['00000', '11111']
+
+
+def test_query_reverse_order(fx_query_test_model, fx_query_test_items):
+    result = fx_query_test_model.query(
+        scan_index_forward=False, published_at__eq='aaaaa')
+    assert result.count() == 2
+    assert [item.title for item in result] == ['11111', '00000']
 
 
 @fixture

@@ -161,7 +161,8 @@ class Model(object):
         return cls.from_raw_data(raw_data['Item'])
 
     @classmethod
-    def query(cls, index_name=None, filter_builder=None, **key_conditions):
+    def query(cls, index_name=None, filter_builder=None,
+              scan_index_forward=None, limit=None, **key_conditions):
         """High level query API.
 
         :param key_filter: key conditions of the query.
@@ -171,7 +172,9 @@ class Model(object):
         """
         query_kwargs = {
             'key_conditions': build_condition(key_conditions, KEY_CONDITIONS),
-            'index_name': index_name
+            'index_name': index_name,
+            'scan_index_forward': scan_index_forward,
+            'limit': limit
         }
         if filter_builder:
             cls._build_filter_expression(filter_builder, query_kwargs)
