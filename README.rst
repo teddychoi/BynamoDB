@@ -148,10 +148,12 @@ Batch Writing & Batch Reading
 
 Changelog
 =========
+0.1.6
+    - Fix `ResultSet` to stop fetching items regardless of the limit param.
 0.1.5
-    - Add support `scan_index_forward` and `limit` pamareter for Query API
+    - Add support `scan_index_forward` and `limit` pamareter for Query API.
 0.1.4
-    - Set `ExclusiveStartKey` as the untransformed `LastEvaluatedKey`
+    - Set `ExclusiveStartKey` as the untransformed `LastEvaluatedKey`.
 0.1.3
     - `Model.delete` needs to use encoded key.
 0.1.2
