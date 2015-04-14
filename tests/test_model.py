@@ -259,6 +259,13 @@ def test_query_reverse_order(fx_query_test_model, fx_query_test_items):
     assert [item.title for item in result] == ['11111', '00000']
 
 
+def test_query_limit(fx_query_test_model, fx_query_test_items):
+    result = fx_query_test_model.query(
+        limit=1, published_at__eq='aaaaa')
+    assert result.count() == 1
+    assert list(result)[0].title == '00000'
+
+
 @fixture
 def fx_batch_get_test_items(fx_query_test_model):
     for i in range(200):
