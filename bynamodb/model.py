@@ -224,8 +224,11 @@ class Model(object):
 
         """
         deserialized = {}
-        for name, attr in item_raw.items():
-            deserialized[name] = getattr(cls, name).decode(attr)
+        for name, value in item_raw.items():
+            attr = getattr(cls, name, None)
+            if attr is None:
+                continue
+            deserialized[name] = attr.decode(value)
         return cls(**deserialized)
 
     @classmethod
