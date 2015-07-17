@@ -148,6 +148,8 @@ Batch Writing & Batch Reading
 
 Changelog
 =========
+0.1.7
+    - Skip decoding non-existent attribute.
 0.1.6
     - Fix `ResultSet` to stop fetching items regardless of the limit param.
 0.1.5
