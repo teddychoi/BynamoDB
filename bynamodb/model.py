@@ -72,6 +72,15 @@ class Model(object):
                     value = value()
                 setattr(self, attr.attr_name, value)
 
+    def serialize(self):
+        data = {}
+        for name, attr in self._get_attributes().items():
+            attr_value = getattr(self, name, None)
+            if not attr_value:
+                continue
+            data[attr.attr_name] = attr.encode(attr_value)
+        return data
+
     def validate(self):
         for name, attr in self._get_attributes().items():
             attr_value = getattr(self, name, None)
@@ -142,13 +151,7 @@ class Model(object):
     @classmethod
     def _put_item(cls, item):
         item.validate()
-        data = {}
-        for name, attr in cls._get_attributes().items():
-            attr_value = getattr(item, name, None)
-            if not attr_value:
-                continue
-            data[attr.attr_name] = attr.encode(attr_value)
-        cls._get_connection().put_item(cls.get_table_name(), data)
+        cls._get_connection().put_item(cls.get_table_name(), item.serialize())
         return item
 
     @classmethod
