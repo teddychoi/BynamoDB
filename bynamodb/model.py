@@ -312,11 +312,12 @@ class BatchWrite(object):
         self.to_delete = []
 
     def put_item(self, **data):
-        self.model(**data).validate()
+        item = self.model(**data)
+        item.validate()
         self.to_put.append(
             {
                 'PutRequest': {
-                    'Item': data
+                    'Item': item.serialize()
                 }
             }
         )
