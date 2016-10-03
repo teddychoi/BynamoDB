@@ -237,7 +237,7 @@ class Model(object):
             for item in result['Responses'].get(cls.get_table_name()):
                 yield cls.from_raw_data(item)
             for i, key in enumerate(
-                    result.get('UnprocessedKeys', {}).get('Keys', [])):
+                    result.get('UnprocessedKeys', {}).get(cls.get_table_name(), {}).get('Keys', [])):
                 unprocessed.insert(i, key)
         raise StopIteration
 
