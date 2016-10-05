@@ -164,29 +164,45 @@ class Model(object):
         return cls.from_raw_data(raw_data['Item'])
 
     @classmethod
-    def update_item(cls, hash_key, range_key=None, attributes_to_set=None):
-        """Update item attributes. Currently only SET action is supported."""
+    def update_item(cls, hash_key, range_key=None, attributes_to_set=None, attributes_to_add=None):
+        """Update item attributes. Currently SET and ADD actions are supported."""
         primary_key = cls._encode_key(hash_key, range_key)
 
         value_names = {}
         encoded_values = {}
         dynamizer = Dynamizer()
-        for i, key in enumerate(attributes_to_set.keys()):
-            value_name = ':v{0}'.format(i)
-            value_names[key] = value_name
 
-            encoded_values[value_name] = dynamizer.encode(attributes_to_set[key])
+        set_expression = ''
+        if attributes_to_set:
+            for i, key in enumerate(attributes_to_set.keys()):
+                value_name = ':s{0}'.format(i)
+                value_names[key] = value_name
+                encoded_values[value_name] = dynamizer.encode(attributes_to_set[key])
 
-        set_expression = 'SET {0}'.format(
-            ', '.join(
-                '{key}={value_name}'.format(key=key, value_name=value_names[key]) for key in attributes_to_set
+            set_expression = 'SET {0}'.format(
+                ', '.join(
+                    '{key}={value_name}'.format(key=key, value_name=value_names[key]) for key in attributes_to_set
+                )
             )
-        )
+
+        add_expression = ''
+        if attributes_to_add:
+            for i, key in enumerate(attributes_to_add.keys()):
+                value_name = ':a{0}'.format(i)
+                value_names[key] = value_name
+                encoded_values[value_name] = dynamizer.encode(attributes_to_add[key])
+            add_expression = 'ADD {0}'.format(
+                ', '.join(
+                    '{key} {value_name}'.format(key=key, value_name=value_names[key]) for key in attributes_to_add
+                )
+            )
+
+        update_expression = ' '.join([set_expression, add_expression])
 
         cls._get_connection().update_item(
             cls.get_table_name(),
             primary_key,
-            update_expression=set_expression, expression_attribute_values=encoded_values)
+            update_expression=update_expression, expression_attribute_values=encoded_values)
 
     @classmethod
     def query(cls, index_name=None, filter_builder=None,
