@@ -79,6 +79,10 @@ class EQ(ComparisonOperator):
     operator = '='
 
 
+class NE(ComparisonOperator):
+    operator = '<>'
+
+
 class GT(ComparisonOperator):
     operator = '>'
 
