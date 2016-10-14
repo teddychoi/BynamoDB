@@ -76,7 +76,7 @@ class Model(object):
         data = {}
         for name, attr in self._get_attributes().items():
             attr_value = getattr(self, name, None)
-            if not attr_value:
+            if attr_value is None:
                 continue
             data[attr.attr_name] = attr.encode(attr_value)
         return data
