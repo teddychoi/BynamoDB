@@ -9,12 +9,13 @@ from .conditions import KEY_CONDITIONS, build_condition
 from .exceptions import NullAttributeException, ItemNotFoundException
 from .indexes import Index, GlobalIndex
 from .results import ResultSet
+import collections
 
 
 class ModelMeta(type):
     """Model meta class"""
     def __new__(mcs, clsname, bases, dct):
-        for name, val in dct.items():
+        for name, val in list(dct.items()):
             if isinstance(val, Attribute):
                 val.attr_name = name
             elif type(val) == type and issubclass(val, Index):
@@ -25,14 +26,13 @@ class ModelMeta(type):
         return super(ModelMeta, mcs).__new__(mcs, clsname, bases, dct)
 
 
-class Model(object):
+class Model(object, metaclass=ModelMeta):
     """Defines schema of a DynamoDB table with
     :class:`~bynamodb.attributes.Attribute` and
     :class:`~bynamodb.attributes.indexes.Index`.
     You can execute APIs of the table through the model.
 
     """
-    __metaclass__ = ModelMeta
 
     #: (:class:`str`) The table name.
     #: # If omitted, the Model class name will be the table name.
@@ -58,23 +58,23 @@ class Model(object):
         """
         self._data = {}
         self._set_defaults()
-        for name, value in data.items():
+        for name, value in list(data.items()):
             if name in dir(self):
                 setattr(self, name, value)
             else:
                 continue
 
     def _set_defaults(self):
-        for attr in self._get_attributes().values():
+        for attr in list(self._get_attributes().values()):
             if attr.default is not None:
                 value = copy.copy(attr.default)
-                if callable(value):
+                if isinstance(value, collections.Callable):
                     value = value()
                 setattr(self, attr.attr_name, value)
 
     def serialize(self):
         data = {}
-        for name, attr in self._get_attributes().items():
+        for name, attr in list(self._get_attributes().items()):
             attr_value = getattr(self, name, None)
             if attr_value is None:
                 continue
@@ -82,7 +82,7 @@ class Model(object):
         return data
 
     def validate(self):
-        for name, attr in self._get_attributes().items():
+        for name, attr in list(self._get_attributes().items()):
             attr_value = getattr(self, name, None)
             if not attr_value:
                 if not attr.null:
@@ -174,7 +174,7 @@ class Model(object):
 
         set_expression = ''
         if attributes_to_set:
-            for i, key in enumerate(attributes_to_set.keys()):
+            for i, key in enumerate(list(attributes_to_set.keys())):
                 value_name = ':s{0}'.format(i)
                 value_names[key] = value_name
                 encoded_values[value_name] = dynamizer.encode(attributes_to_set[key])
@@ -187,7 +187,7 @@ class Model(object):
 
         add_expression = ''
         if attributes_to_add:
-            for i, key in enumerate(attributes_to_add.keys()):
+            for i, key in enumerate(list(attributes_to_add.keys())):
                 value_name = ':a{0}'.format(i)
                 value_names[key] = value_name
                 encoded_values[value_name] = dynamizer.encode(attributes_to_add[key])
@@ -268,7 +268,7 @@ class Model(object):
 
         """
         deserialized = {}
-        for name, value in item_raw.items():
+        for name, value in list(item_raw.items()):
             attr = getattr(cls, name, None)
             if attr is None:
                 continue
@@ -299,7 +299,7 @@ class Model(object):
             return cls._keys
         hash_key = None
         range_key = None
-        for attr in cls._get_attributes().values():
+        for attr in list(cls._get_attributes().values()):
             if attr.hash_key:
                 hash_key = HashKey(attr.attr_name, attr.type)
             elif attr.range_key:

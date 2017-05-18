@@ -20,7 +20,7 @@ CONDITIONS = {
 
 
 KEY_CONDITIONS = dict(
-    (key, value) for key, value in CONDITIONS.items()
+    (key, value) for key, value in list(CONDITIONS.items())
     if key in ['eq', 'lte', 'lt', 'gte', 'gt', 'beginswith', 'between']
 )
 
@@ -36,7 +36,7 @@ def build_condition(filter_map, using=CONDITIONS):
     filters = {}
     dynamizer = Dynamizer()
 
-    for field_and_op, value in filter_map.items():
+    for field_and_op, value in list(filter_map.items()):
         field_bits = field_and_op.split('__')
         fieldname = '__'.join(field_bits[:-1])
 

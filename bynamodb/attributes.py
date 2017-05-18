@@ -77,7 +77,7 @@ class ScalarAttribute(Attribute):
 
 class StringAttribute(ScalarAttribute):
     type = STRING
-    accepts = (str, unicode)
+    accepts = (str, str)
 
 
 class BinaryAttribute(ScalarAttribute):
